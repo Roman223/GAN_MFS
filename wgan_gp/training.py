@@ -285,7 +285,7 @@ class TrainerModified(Trainer):
         if average:
             return sum(wsds) / n_features
         else:
-            return torch.tensor(wsds).to(self.device)
+            return torch.stack(wsds).to(self.device)
 
     def _generator_train_iteration(self, data):
         """One training step for the generator"""
