@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-# import torch.nn.functional as F
-# from torch.autograd import Variable
 
 class Residual(nn.Module):
     """Residual layer for the CTGAN."""
@@ -15,7 +13,7 @@ class Residual(nn.Module):
     def forward(self, input_):
         """Apply the Residual layer to the `input_`."""
         out = self.fc(input_)
-        out = self.bn(out)
+        # out = self.bn(out)
         out = self.relu(out)
         return torch.cat([out, input_], dim=1)
 

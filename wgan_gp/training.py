@@ -8,13 +8,14 @@ import matplotlib.pyplot as plt
 from aim import Image
 
 import ot
-
+import numpy as np
 from torchviz import make_dot
 
 from torch_topological.nn import WassersteinDistance
 import statsmodels.api as sm
 from naive_try.wgan_gp.pymfe_to_torch import MFEToTorch
 from sklearn.decomposition import PCA
+
 
 class Trainer:
     def __init__(self, generator, discriminator, gen_optimizer, dis_optimizer, batch_size, aim_track,
@@ -233,7 +234,7 @@ class TrainerModified(Trainer):
         return sampled_tensor
 
     def calculate_mfs_torch(self, X: torch.Tensor, y: torch.Tensor = None) -> torch.Tensor:
-        return self.mfs_manager.get_mfs(X, y).to(self.device)
+        return self.mfs_manager.get_mfs(X, y, subset=self.subset_mfs).to(self.device)
 
     @staticmethod
     def total_grad_norm(model):
@@ -268,20 +269,23 @@ class TrainerModified(Trainer):
 
         return ot.emd2(ab, ab, M)
 
-    def wasserstein_loss_mfs(self, mfs1, mfs2):
-        total = 0
+    def wasserstein_loss_mfs(self, mfs1, mfs2, average=True):
+        # total = 0
         n_features = mfs1.shape[0]
 
-        debug = []
+        wsds = []
         for first, second in zip(mfs1, mfs2):
             wsd = self.wasserstein_distance_2d(first, second)
-            debug.append(wsd)
-            total += wsd
+            wsds.append(wsd)
+            # total += wsd
 
-        # print_debug = [[i, j.cpu().detach()] for i, j in zip(self.subset_mfs, debug)]
+        # print_debug = [[i, j.cpu().detach()] for i, j in zip(self.subset_mfs, wsds)]
         # print(*print_debug,
         #       sep='\n')
-        return total / n_features
+        if average:
+            return sum(wsds) / n_features
+        else:
+            return torch.stack(wsds).to(self.device)
 
     def _generator_train_iteration(self, data):
         """One training step for the generator"""
@@ -305,9 +309,17 @@ class TrainerModified(Trainer):
         fake_mfs = [self.calculate_mfs_torch(X) for X in generated_variates]
         fake_mfs = self.reshape_mfs_from_variates(fake_mfs)
 
-        mfs_dist = self.wasserstein_loss_mfs(fake_mfs, self.target_mfs["other_mfs"])
+        if isinstance(self.mfs_lambda, list):
+            mfs_lambda = torch.Tensor(self.mfs_lambda).to(self.device)
+            mfs_dist = self.wasserstein_loss_mfs(fake_mfs, self.target_mfs["other_mfs"], average=False)
 
-        loss_mfs = self.mfs_lambda * mfs_dist
+            loss_mfs = mfs_lambda @ mfs_dist
+        elif isinstance(self.mfs_lambda, float):
+            mfs_dist = self.wasserstein_loss_mfs(fake_mfs, self.target_mfs["other_mfs"], average=True)
+            loss_mfs = self.mfs_lambda * mfs_dist
+        else:
+            raise TypeError("mfs_lambda must be either a list or a float")
+
         g_loss = - d_generated.mean() + loss_mfs
 
         if not os.path.isfile("mod_computation_graph_G_loss.png"):
@@ -427,6 +439,3 @@ class TrainerModified(Trainer):
                 self.aim_track.track(aim_fig_D, epoch=epoch, name="D grad flow")
 
         # self.aim_track["mfs_batch"] = self.mfs_to_track
-
-
-

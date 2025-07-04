@@ -1,5 +1,3 @@
-from ast import literal_eval
-
 import torch
 from typing import Optional, Union
 
@@ -8,9 +6,28 @@ import pandas as pd
 import numpy as np
 
 class MFEToTorch:
-    mfs_available = ("cor", "cov", "gravity", "eigenvalues", "iq_range", "kurtosis", "skewness",
-                     "mad", "max", "min", "mean", "median", "range", "sd", "var", "sparsity")
     device = torch.device("cpu")
+
+    @property
+    def feature_methods(self):
+        return {
+            "cor": self.ft_cor_torch,
+            "cov": self.ft_cov_torch,
+            "eigenvalues": self.ft_eigenvals,
+            "iq_range": self.ft_iq_range,
+            "gravity": self.ft_gravity_torch,
+            "kurtosis": self.ft_kurtosis,
+            "skewness": self.ft_skewness,
+            "mad": self.ft_mad,
+            "max": self.ft_max,
+            "min": self.ft_min,
+            "mean": self.ft_mean,
+            "median": self.ft_median,
+            "range": self.ft_range,
+            "sd": self.ft_std,
+            "var": self.ft_var,
+            "sparsity": self.ft_sparsity,
+        }
 
     @staticmethod
     def ft_gravity_torch(
@@ -180,43 +197,33 @@ class MFEToTorch:
 
         return tensor
 
-    def get_mfs(self, X, y):
-        if y is None:
-            gravity = torch.tensor(0, dtype=torch.float).to(self.device)
-        else:
-            gravity = self.ft_gravity_torch(X, y)
+    def get_mfs(self, X, y, subset=None):
+        if subset is None:
+            subset = ["mean", "var"]
 
-        cor = self.ft_cor_torch(X)
-        cov = self.ft_cov_torch(X)
-        kurtosis = self.ft_kurtosis(X)
-        skewness = self.ft_skewness(X)
+        mfs = []
+        for name in subset:
+            if name not in self.feature_methods:
+                raise ValueError(f"Unsupported meta-feature: '{name}'")
 
-        mfs = [
-                cor,
-                cov,
-                self.ft_eigenvals(X),
-                self.ft_iq_range(X),
+            if name == "gravity":
+                if y is None:
+                    raise ValueError("Meta-feature 'gravity' requires `y`.")
+                res = self.feature_methods[name](X, y)
+                res = torch.tile(res, (X.shape[-1],))  # match dimensionality
+            else:
+                res = self.feature_methods[name](X)
 
-                # torch.tile(gravity, (X.shape[-1],)),
-                # torch.tile(kurtosis, (X.shape[-1],)),
-                # torch.tile(skewness, (X.shape[-1],)),
-
-                # self.ft_mad(X),
-                # self.ft_max(X),
-                # self.ft_min(X),
-                self.ft_mean(X),
-                # self.ft_median(X),
-                # self.ft_range(X),
-                # self.ft_std(X),
-                self.ft_var(X),
-                # self.ft_sparsity(X)
-            ]
+            mfs.append(res)
         shapes = [i.shape.numel() for i in mfs]
         mfs = [self.pad_only(mf, max(shapes)) for mf in mfs]
         return torch.stack(mfs)
 
-    def test_me(self):
+    def test_me(self, subset=None):
         """Can be outdated"""
+        if subset is None:
+            subset = ["mean", "var"]
+
         from sklearn.datasets import fetch_california_housing
         bunch = fetch_california_housing(as_frame=True)
         X, y = bunch.data, bunch.target
@@ -231,13 +238,12 @@ class MFEToTorch:
 
         X_tensor = torch.tensor(X.values)
         y_tensor = torch.tensor(y)
-        mfs = self.get_mfs(X_tensor, y_tensor).numpy()
 
+        mfs = self.get_mfs(X_tensor, y_tensor, subset).numpy()
         mfs_df = pd.DataFrame({'torch_mfs': list(mfs)})
 
-        mfs_df.index = self.mfs_available[:len(mfs_df)]
-
-        mfs_df = mfs_df.reindex(self.mfs_available)
+        mfs_df.index = subset
+        # mfs_df = mfs_df.reindex(self.mfs_available)
 
         res = pymfe.merge(mfs_df, left_index=True, right_index=True, how="outer")
 
@@ -252,3 +258,5 @@ class MFEToTorch:
         res = res.map(lambda x: round_element(x, 5)).dropna()
 
         print(res)
+
+# MFEToTorch().test_me(subset=["mean", "var", "eigenvalues", "gravity"])
