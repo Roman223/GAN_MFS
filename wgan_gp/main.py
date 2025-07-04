@@ -31,6 +31,7 @@ class ToyDataset(Dataset):
             idx = idx.tolist()
 
         return self.X[idx]
+
 MFS_ENABLED = True
 
 learning_params = dict(
@@ -52,14 +53,14 @@ learning_params = dict(
 
 if MFS_ENABLED:
     learning_params |= dict(
-        mfs_lambda = .1,
-        # subset_mfs = ["cor", "cov", "eigenvalues", "iq_range",
-        #                  "mad", "mean", "median", "sd", "var", "sparsity"],
-        subset_mfs=["cor", "cov", "mean", "var", "eigenvalues", "iq_range"],
-        # subset_mfs=["mean", "var"],
+        # mfs_lambda = .1,
+        mfs_lambda = [.1, 2.],
+        # subset_mfs=["cor", "cov", "mean", "var", "eigenvalues", "iq_range"],
+        subset_mfs=["mean", "var"],
         sample_number=10,
         sample_frac=0.5,
     )
+
 critic_iterations = [1]
 
 # print(f"len mfs {len(learning_params['subset_mfs'])}")
