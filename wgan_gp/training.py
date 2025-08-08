@@ -12,7 +12,8 @@ from torchviz import make_dot
 
 from torch_topological.nn import WassersteinDistance
 import statsmodels.api as sm
-from naive_try.mfs_generators.statistical_mfs import MFEToTorch
+from mfs_generators.statistical_mfs import StatisticalMFS
+from mfs_generators.info_theory_mfs import InfoTheoryMFS
 from sklearn.decomposition import PCA
 
 
@@ -221,7 +222,7 @@ class TrainerModified(Trainer):
             if isinstance(target_mfs["other_mfs"], torch.Tensor):
                 self.target_mfs["other_mfs"] = target_mfs["other_mfs"].to(self.device)
 
-        self.mfs_manager = MFEToTorch()
+        self.mfs_managers = [StatisticalMFS(), InfoTheoryMFS()]
         self.wasserstein_dist_func = WassersteinDistance(q=2)
         self.sample_number = sample_number
 
@@ -233,7 +234,7 @@ class TrainerModified(Trainer):
         return sampled_tensor
 
     def calculate_mfs_torch(self, X: torch.Tensor, y: torch.Tensor = None) -> torch.Tensor:
-        return self.mfs_manager.get_mfs(X, y, subset=self.subset_mfs).to(self.device)
+        return torch.stack([mfs_manager.get_mfs(X, y, subset=self.subset_mfs).to(self.device) for mfs_manager in self.mfs_managers])
 
     @staticmethod
     def total_grad_norm(model):
@@ -365,7 +366,7 @@ class TrainerModified(Trainer):
 
     def train(self, data_loader, epochs, plot_freq):
         pca = False
-        self.mfs_manager.change_device(self.device)
+        [mfs_manager.change_device(self.device) for mfs_manager in self.mfs_managers]
         pbar = tqdm.tqdm(range(epochs), total=epochs, disable=self.disable)
         self.loss_values = pd.DataFrame()
         self.num_batches_per_epoch = len(data_loader)

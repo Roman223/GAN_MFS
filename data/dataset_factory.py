@@ -1,17 +1,10 @@
 import pandas as pd
-from sklearn.datasets import make_moons, make_regression
+from sklearn.datasets import make_moons, make_regression, fetch_california_housing
 from sklearn.preprocessing import StandardScaler
 import numpy as np
-
-class AbaloneDataset:
-    def __init__(self, path, process=True, **kwargs):
-        self.process = process
-        data = pd.read_csv(path, **kwargs)
-        self.ds_size = data.shape
-        if self.process:
-            self.y = data.pop("target").values
-        self.cols = data.columns.tolist()
-        self.data = data
+from utils import remove_anomalies_iqr
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 class RegressionDataset:
     def __init__(self, **kwargs):
@@ -84,9 +77,22 @@ class CircleDataset:
         #     plt.show()
 
 class CaliforniaDataset:
-    def __init__(self, process=True, **kwargs):
-        pass
+    def __init__(self, **kwargs):
+        real_data, y = fetch_california_housing(as_frame=True, return_X_y=True)
+        real_data.drop(columns=["AveOccup"], inplace=True)
+        cols = real_data.columns
 
+        real_data_no_anomalies, self.y = remove_anomalies_iqr(real_data, y)
 
-reg = CircleDataset()
+        # print(f"Init data shape: {real_data_no_anomalies.shape} + {self.y.shape}")
+
+        scaler = StandardScaler()
+        real_data_scaled = scaler.fit_transform(real_data_no_anomalies)
+        data = pd.DataFrame(real_data_scaled, columns=cols)
+        self.data = data.set_index(real_data_no_anomalies.index)
+
+reg = CaliforniaDataset()
 print(reg.data)
+print(reg.y)
+# sns.pairplot(reg.data)
+# plt.show()

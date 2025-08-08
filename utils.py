@@ -5,7 +5,6 @@ from persim import wasserstein
 import numpy as np
 import pandas as pd
 import torch
-import tqdm
 from xgboost import XGBRegressor
 
 from sklearn.metrics import r2_score, root_mean_squared_error, mean_absolute_percentage_error
@@ -204,10 +203,8 @@ def remove_anomalies_iqr(x: pd.DataFrame, y: pd.DataFrame):
     IQR = Q3 - Q1
 
     real_data_scaled_no_anomalies_indexes = x[~((x < (Q1 - 1.5 * IQR)) |(x > (Q3 + 1.5 * IQR))).any(axis=1)].index
-    real_data_scaled_no_anomalies = x.iloc[real_data_scaled_no_anomalies_indexes, :].values
-    real_data_scaled_no_anomalies = real_data_scaled_no_anomalies.values
-    y = pd.DataFrame(y[real_data_scaled_no_anomalies.index],
-                     columns=["target"])
+    real_data_scaled_no_anomalies = x.iloc[real_data_scaled_no_anomalies_indexes, :]
+    y = y[real_data_scaled_no_anomalies.index]
 
     # real_data_scaled_no_anomalies["target"] = y[real_data_scaled_no_anomalies.index]
     # real_data_scaled_no_anomalies.to_csv("california_scaled_no_anomalies.csv", index=False)

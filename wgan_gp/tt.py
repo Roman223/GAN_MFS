@@ -5,7 +5,7 @@ from tqdm import tqdm
 import numpy as np
 import pandas as pd
 from torchviz import make_dot
-
+from sklearn.preprocessing import KBinsDiscretizer
 torch.manual_seed(5)
 
 # Toy dataset (assumed simple tensor-based dataset)
@@ -20,7 +20,7 @@ class ToyDataset(Dataset):
         return self.data[idx]
 
 def torch_crosstab(row: torch.Tensor, col: torch.Tensor, normalize="all", num_rows=None, num_cols=None):
-    assert row.ndim == 1 and col.ndim == 1, "row and col must be 1D tensors"
+    assert row.ndim == 1 and col.ndim == 1, f"row and col must be 1D tensors. Obtained {row.shape, col.shape}"
     assert row.shape[0] == col.shape[0], "row and col must have the same length"
     assert normalize in (None, 'all', 'index', 'columns'), "Invalid normalize argument"
 
@@ -68,28 +68,40 @@ class NeuralNetwork(nn.Module):
         logits = self.linear_relu_stack(x)
         return logits
 
-def custom_loss_fn(preds, targets, x_discrete, lambda_entropy=1.0):
+def custom_loss_fn(preds, targets, lambda_entropy=1.0):
+    preds_numpy = preds.clone().numpy()
+
+    discretizer = KBinsDiscretizer(strategy='uniform', encode='ordinal')
+    preds_disc = torch.from_numpy(discretizer.fit_transform(preds_numpy)).int()
+    preds_disc.grad = preds.grad
+
+    joint_entropy = []
+    for i in range(preds_disc.shape[1]):
+        crosstab = torch_crosstab(preds_disc[:, i], targets.flatten(), normalize='all')
+        crosstab.requires_grad_(True)
+        joint_entropy.append(calc_joint_entropy(crosstab))
+
+    joint_entropy = torch.stack(joint_entropy)
     mse_loss = nn.functional.mse_loss(preds, targets)
-
-    # Compute joint entropy of two discrete input features
-    x_discrete = x_discrete.detach()
-    crosstab = torch_crosstab(x_discrete[:, 0], x_discrete[:, 1], normalize='all').requires_grad_(True)
-    print(crosstab.shape)
-    joint_entropy = calc_joint_entropy(crosstab)
-
+    mse_loss.requires_grad_(True)
     return mse_loss + lambda_entropy * joint_entropy
 
 # Create synthetic data
 num_rows = 1000
-batch_size = 132
+batch_size = 3
 
-data_disc = torch.randint(0, 100, size=(num_rows, 2), dtype=torch.int64)
+# data_disc = torch.randint(0, 100, size=(num_rows, 2), dtype=torch.int64)
 data_cont = torch.randn(size=(num_rows, 5)) + 5
-target = torch.randn(size=(num_rows, 1)) + 5
+# target = torch.randn(size=(num_rows, 1)) + 5
+target = torch.randint(0, 2, size=(num_rows, 1), dtype=torch.int64)
+print(data_cont.shape, target.shape)
+data = torch.concat([data_cont, target], dim=1)
 
-print(data_disc.shape, data_cont.shape, target.shape)
-data = torch.concat([data_disc.to(torch.float32), data_cont, target], dim=1)
-
+print(data)
+custom_loss = custom_loss_fn(data_cont, target)
+print(custom_loss)
+make_dot(custom_loss, show_attrs=True).render("test_Loss", format="png")
+raise Exception
 def calc_joint_ent(
     vec_x: np.ndarray, vec_y: np.ndarray, epsilon: float = 1.0e-8
 ):

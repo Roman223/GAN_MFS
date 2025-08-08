@@ -1,19 +1,19 @@
 import pandas as pd
 import torch.optim as optim
 from torch.utils.data import DataLoader
-import matplotlib.pyplot as plt
+
 import torch
 import numpy as np
 from pprint import pprint
 from models import Generator, Discriminator
 from training import Trainer, TrainerModified
 import aim
-from sklearn.datasets import make_moons, fetch_california_housing, make_regression
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
-from naive_try.utils import create_variates
+import matplotlib.pyplot as plt
 import seaborn as sns
-from naive_try.utils import calc_metrics, estimate_marginal_js, calc_utility_metrics
+from utils import calc_metrics, estimate_marginal_js, calc_utility_metrics, create_variates
+from data.dataset_factory import CircleDataset, MoonsDataset
+from data.toy_dataset import ToyDataset
 
 print("Torch cuda status: ", torch.cuda.is_available())
 
@@ -47,45 +47,10 @@ if MFS_ENABLED:
     )
 
 critic_iterations = [1]
-
-# print(f"len mfs {len(learning_params['subset_mfs'])}")
-# real_data = create_joint(sample_size=1500, arc_size=2000, plot=False)
-
-real_data_scaled_no_anomalies = pd.read_csv("../data/abalone_cleaned.csv")
-
-print(real_data_scaled_no_anomalies.shape)
-real_ds_size = real_data_scaled_no_anomalies.shape
-y_no_anomalies = real_data_scaled_no_anomalies.pop("target").values
-cols = real_data_scaled_no_anomalies.columns.tolist()
-real_data_scaled_no_anomalies = real_data_scaled_no_anomalies.values
-
-# real_data, y = make_regression(n_samples=20000, n_features=4, noise=1, random_state=42)
-# real_data, y = make_moons(n_samples=3000, noise=0.05, random_state=42)
-# real_data = StandardScaler().fit_transform(real_data)
-# cols = ["f1", "f2", "f3", "f4"]
-
-# bunch = fetch_california_housing(as_frame=True)
-# real_data, y = bunch.data, bunch.target
-# real_data.drop(columns=["AveOccup"], inplace=True)
-#
-# real_data = real_data.values
-#
-# cols = ['MedInc', 'HouseAge', 'AveRooms',
-#         'AveBedrms', 'Population',
-#        'Latitude', 'Longitude']
-
-
-# print(f"Init data shape: {real_data.shape} + {y.shape}")
-
-# scaler_y = StandardScaler()
-# y_scaled = scaler_y.fit_transform(y.reshape(-1, 1)).flatten()
-
-# scaler = StandardScaler()
-# real_data_scaled = scaler.fit_transform(real_data)
-# real_data_scaled = pd.DataFrame(real_data_scaled, columns=cols)
-
-print(f"Train shape: {real_ds_size}")
-# print(f"Test shape: {test_data.shape}")
+dataset_factory = MoonsDataset()
+X, y = dataset_factory.data, dataset_factory.y
+cols = X.columns
+real_ds_size = X.shape
 # learning_params["batch_size"] = int(real_ds_size[0] * 0.1)
 learning_params["batch_size"] = 64
 print(learning_params["batch_size"])
@@ -95,9 +60,7 @@ dead_neurons_storage = {}
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 for _ in range(eval_number):
     for critic_iteration in critic_iterations:
-        X_train, X_test, y_train, y_test = train_test_split(real_data_scaled_no_anomalies,
-                                                            y_no_anomalies,
-                                                            test_size=0.3)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
         X = np.hstack([X_train, y_train.reshape(-1, 1)])
 
