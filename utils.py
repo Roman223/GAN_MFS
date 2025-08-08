@@ -4,8 +4,6 @@ from ripser import ripser
 from persim import wasserstein
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.stats import gaussian_kde
 import torch
 import tqdm
 from xgboost import XGBRegressor
@@ -199,58 +197,6 @@ def create_variates(X: torch.Tensor, y: torch.Tensor=None, sample_frac=0.3, samp
     total_size = X.size(0)
     n_samples = int(total_size * sample_frac)
     return [sample_from_Xy_tensors(X, n_samples) for _ in range(sample_number)]
-
-def create_joint(plot=False, sample_size=1000,
-                 arc_size=1000):
-    # Generate two Gaussian blobs
-    mean1 = [3, 3]
-    mean2 = [-5, -5]
-    cov = [[0.2, 0], [0, 0.2]]
-    samples1 = np.random.multivariate_normal(mean1, cov, size=sample_size)
-    samples2 = np.random.multivariate_normal(mean2, cov, size=sample_size)
-
-    # Create a perturbed arc (half-circle)
-    theta = np.linspace(0, 2 * np.pi, arc_size)
-    arc_x = np.cos(theta)
-    arc_y = np.sin(theta)
-    arc = np.stack([arc_x, arc_y], axis=1)
-
-    # Translate and add noise to arc
-    arc = 5.5 * arc  # scale to match distance
-    arc[:, 0] -= 1 # center between the two blobs
-    arc[:, 1] -= 1  # center between the two blobs
-    arc += np.random.normal(scale=0.2, size=arc.shape)
-
-    # Combine all points
-    all_samples = np.vstack([samples1, samples2, arc])
-
-    if plot:
-        # Perform KDE
-        kde = gaussian_kde(all_samples.T)
-        x_grid, y_grid = np.mgrid[-10:10:100j, -10:10:100j]
-        positions = np.vstack([x_grid.ravel(), y_grid.ravel()])
-        density = kde(positions).reshape(x_grid.shape)
-
-        # Plot
-        plt.figure(figsize=(8, 6))
-        plt.contourf(x_grid, y_grid, density, levels=50, cmap="viridis")
-        plt.scatter(all_samples[:, 0], all_samples[:, 1], s=5, color="white", alpha=0.5)
-        plt.title("KDE of 2 Gaussians + Noisy Arc")
-        plt.xlabel("x")
-        plt.ylabel("y")
-        plt.axis("equal")
-        plt.grid(True)
-        plt.show()
-
-    return torch.tensor(all_samples, dtype=torch.float)
-
-# Generate real data (Gaussian mixture)
-def get_real_data(batch_size):
-    mix = np.random.choice(2, size=(batch_size,))
-    data = np.zeros((batch_size, 2))
-    data[mix == 0] = np.random.normal(loc=[3, 3], scale=1.0, size=(np.sum(mix == 0), 2))
-    data[mix == 1] = np.random.normal(loc=[-5, -5], scale=1.0, size=(np.sum(mix == 1), 2))
-    return torch.tensor(data, dtype=torch.float)
 
 def remove_anomalies_iqr(x: pd.DataFrame, y: pd.DataFrame):
     Q1 = x.quantile(0.25)

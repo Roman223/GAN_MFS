@@ -1,6 +1,6 @@
 import pandas as pd
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import torch
 import numpy as np
@@ -13,24 +13,9 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
 from naive_try.utils import create_variates
 import seaborn as sns
-from naive_try.utils import create_joint, calc_metrics, estimate_marginal_js, calc_utility_metrics
+from naive_try.utils import calc_metrics, estimate_marginal_js, calc_utility_metrics
 
 print("Torch cuda status: ", torch.cuda.is_available())
-
-
-class ToyDataset(Dataset):
-    def __init__(self, dataset):
-        self.X = dataset
-
-    def __len__(self):
-        return len(self.X)
-
-    def __getitem__(self, idx):
-        # Convert idx from tensor to list due to pandas bug (that arises when using pytorch's random_split)
-        if isinstance(idx, torch.Tensor):
-            idx = idx.tolist()
-
-        return self.X[idx]
 
 MFS_ENABLED = True
 

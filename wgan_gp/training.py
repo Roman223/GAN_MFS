@@ -8,12 +8,11 @@ import matplotlib.pyplot as plt
 from aim import Image
 
 import ot
-import numpy as np
 from torchviz import make_dot
 
 from torch_topological.nn import WassersteinDistance
 import statsmodels.api as sm
-from naive_try.wgan_gp.pymfe_to_torch import MFEToTorch
+from naive_try.mfs_generators.statistical_mfs import MFEToTorch
 from sklearn.decomposition import PCA
 
 

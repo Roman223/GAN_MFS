@@ -5,7 +5,7 @@ from pymfe.mfe import MFE
 import pandas as pd
 import numpy as np
 
-class MFEToTorch:
+class StatisticalMFS:
     device = torch.device("cpu")
 
     @property
@@ -259,4 +259,4 @@ class MFEToTorch:
 
         print(res)
 
-# MFEToTorch().test_me(subset=["mean", "var", "eigenvalues", "gravity"])
+# StatisticalMFS().test_me(subset=["gravity"])
