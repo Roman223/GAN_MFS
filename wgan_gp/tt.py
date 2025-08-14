@@ -34,7 +34,7 @@ class SoftJointEntropy(nn.Module):
         super().__init__()
         self.num_bins = num_bins
         self.eps = eps
-        bin_centers = torch.linspace(0.0, 1.0, num_bins).view(1, num_bins)
+        bin_centers = torch.linspace(0.0, 1.0, num_bins).view(num_bins, 1)
         self.register_buffer("bin_centers", bin_centers)
         inv_two_sigma2 = 1.0 / (2.0 * sigma * sigma)
         self.register_buffer("inv_two_sigma2", torch.tensor(inv_two_sigma2))
@@ -71,16 +71,26 @@ class SoftJointEntropy(nn.Module):
     def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         # logits: (N,1) targets: (N,1) in {0,1}
         probs = torch.sigmoid(logits)
-        dist2 = (probs - self.bin_centers) ** 2
-        weight_logits = -dist2 * self.inv_two_sigma2
-        weights = F.softmax(weight_logits, dim=-1)
-
+        # dist2 = (probs - self.bin_centers) ** 2 # incorrect due to broadcasting
+        dist_matrix = torch.cdist(self.bin_centers, probs)
+        closest_indx = dist_matrix.argmin(dim=0)
+        dist = dist_matrix[closest_indx].diag().view(-1, 1)
+        weight_logits = dist * self.inv_two_sigma2
+        print(weight_logits)
+        weights = F.softmax(weight_logits, dim=0)
+        print(weights)
         t = targets.float()
-        WT = weights.transpose(0, 1)
-        class1 = WT @ t
-        class0 = WT @ (1.0 - t)
+        class1 = weights * t
+        class0 = weights * ((1.0 - t) + self.eps)
+
         counts = torch.cat([class0, class1], dim=1)
+        print(counts)
+        # assert counts.sum().isclose(torch.tensor(1.0)), f"counts {counts.sum()} does not sum to 1.0"
         flat = counts.reshape(-1)
+        # import matplotlib.pyplot as plt
+        # plt.hist(flat.cpu().detach().numpy())
+        # plt.show()
+
         prob = flat / (flat.sum() + self.eps)
         log_p = torch.log2(prob + self.eps)
         return -(prob * log_p).sum()
@@ -91,7 +101,8 @@ class LossModule(nn.Module):
         self.bce = nn.BCEWithLogitsLoss()
         self.je = SoftJointEntropy(num_bins=num_bins, sigma=sigma)
         self.lambda_entropy = lambda_entropy
-        self.etrr = []
+        self.etr_est = []
+        self.etr_true = []
 
     def calc_joint_ent(self,
             vec_x: np.ndarray, vec_y: np.ndarray, epsilon: float = 1.0e-8
@@ -106,7 +117,7 @@ class LossModule(nn.Module):
         joint_prob_mat = (
                 pd.crosstab(vec_y_int, vec_x_binned, normalize=True).values + epsilon
         )
-        # print(pd.crosstab(vec_y_int, vec_x_binned, normalize=True).values + epsilon)
+        print(pd.crosstab(vec_y_int, vec_x_binned, normalize=True).values)
         joint_prob_mat = joint_prob_mat.T
 
         joint_ent = np.sum(
@@ -116,13 +127,15 @@ class LossModule(nn.Module):
         return -1.0 * joint_ent
 
     def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
-        # je_val = self.je(logits, targets)
-        # pfmfe_val = self.calc_joint_ent(logits.cpu().detach().numpy(), targets.cpu().detach().numpy())
-        # print(f"\nhard: {pfmfe_val} soft: {je_val} delta: {pfmfe_val - je_val}")
-        # print(f"Expected: {logits.shape} {targets.shape}")
+        je_val = self.je(logits, targets).cpu().detach().numpy()
+        pfmfe_val = self.calc_joint_ent(logits.cpu().detach().numpy(), targets.cpu().detach().numpy())
+
+        self.etr_true.append(pfmfe_val)
+        self.etr_est.append(je_val)
         # entropy_uncert = self.je(logits, targets) - \
         #         self.calc_joint_ent(logits.cpu().detach().numpy(), targets.cpu().detach().numpy()).item()
         # self.etrr.append(entropy_uncert.item())
+
         return self.bce(logits, targets.float()) + self.lambda_entropy * self.je(logits, targets.float())
 
 def make_dataloader(X: torch.Tensor, y: torch.Tensor, batch_size: int = 256, num_workers: int | None = None) -> DataLoader:
@@ -162,7 +175,7 @@ def train(
 
     train_dl = make_dataloader(X, y, batch_size=batch_size)
     opt = torch.optim.Adam(model.parameters(), lr=lr)
-    bar = tqdm(range(1, epochs + 1))
+    bar = tqdm(range(1, epochs + 1), disable=False)
     for epoch in bar:
         model.train()
         for step, (xb, yb) in enumerate(train_dl, start=1):
@@ -184,8 +197,8 @@ def train(
 
 # X: (N, feature_dim), y: (N, 1) in {0,1}
 feature_dim = 5
-epochs = 500
-batch_size = 200
+epochs = 2
+batch_size = 3
 
 N = 1000
 # X = (torch.randn(N, feature_dim, device=device) + 5.0)
@@ -198,8 +211,12 @@ print(X.shape, y.shape)
 X = torch.from_numpy(X_train).float().to(device, non_blocking=True)
 y = torch.from_numpy(y_train).float().to(device, non_blocking=True).view(-1, 1)
 
+sigma = 0.01
+n_bins = 3
+
+lambda_entropy = 0.1
 model = NeuralNetwork(feature_num=X.shape[1])
-loss_mod = LossModule(num_bins=3, sigma=0.0002, lambda_entropy=.1)
+loss_mod = LossModule(num_bins=n_bins, sigma=sigma, lambda_entropy=lambda_entropy)
 
 trained_model, losses = train(
     model,
@@ -213,8 +230,15 @@ trained_model, losses = train(
 
 import matplotlib.pyplot as plt
 plt.plot(losses)
-plt.title("LOss")
+plt.title(f"Loss. Lambda_entropy: {lambda_entropy:.4f}")
 plt.show()
+plt.plot(loss_mod.etr_est, label="etr_est")
+plt.plot(loss_mod.etr_true, label="etr_true")
+plt.title(f"n_bins={n_bins}, sigma={sigma}")
+plt.legend()
+plt.grid()
+plt.show()
+
 from sklearn.metrics import classification_report
 
 preds_logit = trained_model(torch.from_numpy(x_test).to(device).float()).float()
