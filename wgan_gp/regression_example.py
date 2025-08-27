@@ -1,5 +1,6 @@
 import os.path
 import matplotlib.pyplot as plt
+import numpy
 from sklearn.model_selection import train_test_split
 from torchviz import make_dot
 import math
@@ -28,71 +29,20 @@ class NeuralNetwork(nn.Module):
     def __init__(self, feature_num: int):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(feature_num, 32),
+            nn.Linear(feature_num, 16),
             nn.ReLU(),
             # nn.Linear(512, 512),
             # nn.ReLU(),
-            nn.Linear(32, 1),
+            nn.Linear(16, 1),
         )
 
     def forward(self, x):
         return self.net(x)
 
 
-class SoftJointEntropyReg(nn.Module):
-    def __init__(self, num_bins: int = 20, sigma: float = 0.01,
-                 y_min: float = 0.0, y_max: float = 1.0):
-        super().__init__()
-        self.num_bins = int(num_bins)
-        self.sigma = float(sigma)
-        self.y_min = float(y_min)
-        self.y_max = float(y_max)
-        self.eps = 1e-8
-        bin_centers = torch.linspace(0.0, 1.0, self.num_bins).view(self.num_bins, 1)
-        self.register_buffer("bin_centers", bin_centers)
-        inv_two_sigma2 = 1.0 / (2.0 * self.sigma * self.sigma)
-        self.register_buffer("inv_two_sigma2", torch.tensor(inv_two_sigma2))
-        self.delta = 1.0 / (self.num_bins - 1) if self.num_bins > 1 else None
-        if self.delta is not None and self.sigma > 0:
-            kappa = math.exp(-(self.delta ** 2) / (2.0 * self.sigma * self.sigma))
-            if kappa < 1e-17:
-                warnings.warn(
-                    f"SoftJE(reg): sigma={self.sigma:.4g} very sharp (k≈{kappa:.2e}); consider increasing.",
-                    RuntimeWarning,
-                )
-            elif kappa > 0.2:
-                warnings.warn(
-                    f"SoftJE(reg): sigma={self.sigma:.4g} very soft (k≈{kappa:.2f}); consider decreasing.",
-                    RuntimeWarning,
-                )
-
-    def _soft_bin(self, values01: torch.Tensor) -> torch.Tensor:
-        dist2 = (values01 - self.bin_centers.T).pow(2)
-        weight_logits = -dist2 * self.inv_two_sigma2
-        return F.softmax(weight_logits, dim=1)
-
-    def _normalize01(self, y: torch.Tensor) -> torch.Tensor:
-        rng = max(self.y_max - self.y_min, 1e-8)
-        return torch.clamp((y - self.y_min) / rng, 0.0, 1.0)
-
-    def forward(self, preds: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
-        # preds01 = torch.sigmoid(preds)
-        preds01 = self._normalize01(preds)
-        targets01 = self._normalize01(targets)
-
-        wp = self._soft_bin(preds01)
-        wt = self._soft_bin(targets01)
-        alpha = 1e-3
-        counts = wp.T @ wt
-        counts = counts + alpha
-        prob = counts / (counts.sum() + self.eps)
-        log_p = torch.log2(prob + self.eps)
-        return -(prob * log_p).sum()
-
-
 class EntropyPrecomputer:
-    def __init__(self, num_bins: int = 20, sigma: float = 0.01):
-        self.num_bins = int(num_bins)
+    def __init__(self, bins,  sigma: float = 0.01):
+        self.bins = bins
         self.sigma = float(sigma)
         self.columns = []
         self.discrete_columns = []
@@ -102,27 +52,62 @@ class EntropyPrecomputer:
         self.y_min = None
         self.y_max = None
 
-    @staticmethod
+    @property
+    def feature_ranges(self):
+        return f"""
+        feature_mins: {self.feature_mins}
+        feature_maxs:{self.feature_maxs}
+        y_min: {self.y_min}
+        y_max: {self.y_max}
+        ________"""
+
+    def numpy_marginal_entropy(self, x):
+        rng_x = self.y_max - self.y_min
+        preds01 = np.clip((x.ravel() - self.y_min) / rng_x, 0.0, 1.0)
+        H, _ = np.histogram(preds01, bins=self.num_bins, range=[0, 1])
+        H = H.astype(np.float64) + 1e-3
+        P = H / (H.sum() + 1e-12)
+        logP = np.log2(P + 1e-12)
+        return float(-(P * logP).sum())
+
     def numpy_joint_entropy(
+            self,
             preds: np.ndarray,
             targets: np.ndarray,
-            num_bins: int,
-            y_range: list[float],
-            x_range: list[float],
+            # y_range: list[float],
+            # x_range: list[float],
             alpha: float = 1e-3,
     ) -> float:
-        x_min, x_max = x_range
-        y_min, y_max = y_range
+        if isinstance(self.feature_mins, torch.Tensor):
+            feature_mins = from_tensor_to_numpy(self.feature_mins)
+        else:
+            feature_mins = self.feature_mins
+            
+        if isinstance(self.feature_maxs, torch.Tensor):
+            feature_maxs = from_tensor_to_numpy(self.feature_maxs)
+        else:
+            feature_maxs = self.feature_maxs
+
+        if isinstance(preds, torch.Tensor):
+            preds = from_tensor_to_numpy(preds)
+        if isinstance(targets, torch.Tensor):
+            targets = from_tensor_to_numpy(targets)
+
+        # x_min, x_max = x_range
+        # y_min, y_max = y_range
 
         # Map preds to [0,1] via sigmoid and normalize targets to [0,1]
-        # preds01 = 1.0 / (1.0 + np.exp(-preds.reshape(-1)))
-        rng_x = max(x_max - x_min, 1e-8)
-        preds01 = np.clip((preds.ravel() - x_min) / rng_x, 0.0, 1.0)
+        preds01 = 1.0 / (1.0 + np.exp(-preds.reshape(-1)))
+        # print(self.feature_maxs - self.feature_mins)
+        # rng_x = max(self.feature_maxs - self.feature_mins, 1e-8)
+        # rng_x = feature_maxs - feature_mins
 
-        rng_t = max(y_max - y_min, 1e-8)
-        targets01 = np.clip((targets.reshape(-1) - y_min) / rng_t, 0.0, 1.0)
+        # preds01 = np.clip((preds.ravel() - feature_mins) / rng_x, 0.0, 1.0)
 
-        H, xedges, yedges = np.histogram2d(preds01, targets01, bins=num_bins, range=[[0, 1], [0, 1]])
+        rng_t = max(self.y_max - self.y_min, 1e-8)
+        targets01 = np.clip((targets.reshape(-1) - self.y_min) / rng_t, 0.0, 1.0)
+
+        H, xedges, yedges = np.histogram2d(preds01, targets01, bins=self.bins, range=[[0, 1], [0, 1]])
         H = H.astype(np.float64) + alpha
         P = H / (H.sum() + 1e-12)
         logP = np.log2(P + 1e-12)
@@ -154,6 +139,18 @@ class EntropyPrecomputer:
         # print(self.feature_mins, self.feature_maxs)
         # print(self.y_min, self.y_max)
 
+    def set_max_min2(self, preds, targets):
+        if isinstance(preds, torch.Tensor):
+            # todo: bad idea, switching memory
+            feature_mins = preds.min()
+            feature_maxs = preds.max()
+
+            self.feature_mins = from_tensor_to_numpy(feature_mins).reshape(-1)
+            self.feature_maxs = from_tensor_to_numpy(feature_maxs).reshape(-1)
+        if isinstance(targets, torch.Tensor):
+            self.y_min = from_tensor_to_numpy(targets.min())
+            self.y_max = from_tensor_to_numpy(targets.max())
+
     @staticmethod
     def cats_to_probs(cats: pd.Series):
         probs = cats.value_counts(normalize=True).to_dict()
@@ -184,19 +181,23 @@ class EntropyPrecomputer:
 
 class EntropyMatcherLoss(nn.Module):
     def __init__(self,
-                 num_bins: int,
+                 bins,
                  sigma: float,
-                 je_true_vector: np.ndarray,
+                 je_true_vector: np.ndarray = None,
                  lambda_entropy: float = 0.05):
         super().__init__()
         self.mse = nn.MSELoss()
-        self.num_bins = int(num_bins)
+        # self.num_bins = int(num_bins)
+        self.bins = bins
         self.sigma = float(sigma)
-        self.je_true_vector = torch.tensor(je_true_vector, dtype=torch.float32)
+        if not je_true_vector is None:
+            self.je_true_vector = torch.tensor(je_true_vector, dtype=torch.float32)
         self.lambda_entropy = float(lambda_entropy)
 
         # bin_centers shaped to broadcast with (N, D, 1) -> (N, D, B)
-        bin_centers = torch.linspace(0.0, 1.0, self.num_bins).view(1, 1, self.num_bins)
+        # bin_centers = torch.linspace(0.0, 1.0, self.num_bins).view(1, 1, self.num_bins)
+        bin_centers = torch.from_numpy(bins).view(1, 1, -1)
+
         self.register_buffer("bin_centers", bin_centers)
 
         inv_two_sigma2 = 1.0 / (2.0 * self.sigma * self.sigma)
@@ -221,16 +222,19 @@ class EntropyMatcherLoss(nn.Module):
         xb: (N,D)
         """
         mse_loss = self.mse(preds, targets)
-        # preds01 = torch.sigmoid(preds)  # (N,1)
+        preds01 = torch.sigmoid(preds)  # (N,1)
 
-        preds01 = self._normalize01(preds)
+        # preds01 = self._normalize01(preds)
+        targets01 = self._normalize01(targets)
         # Normalize features (per-column)
-        x01 = self._normalize01(xb)     # (N,D)
+        # x01 = self._normalize01(xb)     # (N,D)
 
         # Soft bin weights
-        wx = self._soft_bin(x01)        # (N,D,B)
+        # wx = self._soft_bin(x01)        # (N,D,B)
+        wx = self._soft_bin(targets01)
+        # print(wx)
         wy = self._soft_bin(preds01)    # (N,1,B)
-
+        # print(wy)
         # Squeeze prediction bin axis to (N,B)
         wy_s = wy.squeeze(1)            # (N,B)
 
@@ -247,14 +251,15 @@ class EntropyMatcherLoss(nn.Module):
         je_vec = -(prob * log_p).sum(dim=(1, 2))  # (D,)
 
         # Optional sanity check: je_true_vector length matches number of features
-        D = xb.shape[1]
-        if self.je_true_vector.numel() != D:
-            raise ValueError(f"je_true_vector length ({self.je_true_vector.numel()}) != number of features D ({D})")
+        # D = xb.shape[1]
+        # if self.je_true_vector.numel() != D:
+        #     raise ValueError(f"je_true_vector length ({self.je_true_vector.numel()}) != number of features D ({D})")
 
-        je_true = self.je_true_vector.to(je_vec.device).view(-1)
+        # je_true = self.je_true_vector.to(je_vec.device).view(-1)
+        # print(torch.stack([je_true, je_vec]))
+        # ent_loss = torch.linalg.vector_norm(je_vec - je_true)
 
-        ent_loss = torch.mean(je_vec - je_true)
-        return mse_loss + self.lambda_entropy * ent_loss, from_tensor_to_numpy(je_vec)
+        return 0 * mse_loss + self.lambda_entropy * je_vec, from_tensor_to_numpy(je_vec)
 
 class RegressionTrainer:
     def __init__(self, model: nn.Module, loss_mod: nn.Module, ref_model: EntropyPrecomputer, lr: float = 1e-3):
@@ -294,13 +299,18 @@ class RegressionTrainer:
                 preds = self.model(xb)
                 loss, entr_est = self.loss_mod(preds, yb, xb)
 
-                self.ref_mod.set_max_min(xb, preds)
-                ref_vals = self.ref_mod.compute_je_vector(
-                    from_tensor_to_numpy(xb), from_tensor_to_numpy(preds)
-                )
+                # print(self.ref_mod.feature_ranges)
+                # self.ref_mod.set_max_min(xb, preds)
+                self.ref_mod.set_max_min2(yb, preds)
+                # print(self.ref_mod.feature_ranges)
+                # ref_vals = self.ref_mod.compute_je_vector(
+                #     from_tensor_to_numpy(yb), from_tensor_to_numpy(preds)
+                # )
+                ref_vals = self.ref_mod.numpy_joint_entropy(preds, yb)
 
                 local_entr_true.append(np.mean(ref_vals))
-                local_entr_pred.append(np.mean(entr_est))
+                local_entr_pred.append(np.mean(entr_est[0]))
+
                 loss.backward()
                 per_param_norms = []
                 for name, p in self.model.named_parameters():
@@ -323,13 +333,13 @@ class RegressionTrainer:
                     self.grad_history[name].append(grad_sums[name] / grad_count)
                 self.total_grad_norm_history.append(total_grad_norm_sum / grad_count)
         if not os.path.exists("test_Loss_reg"):
-            make_dot(loss, params=dict(self.model.named_parameters())).render("test_Loss_reg", format="png")
+            make_dot(loss, params=dict(self.model.named_parameters())).render("test_Loss_reg", format="svg")
         return losses
 
 if __name__ == "__main__":
-    num_bins = 10
-    sigma = .002
-    lambda_entropy = .1
+    # num_bins = 30
+    sigma = 1
+    lambda_entropy = 1
 
     epochs = 500
     batch_size = 64
@@ -344,27 +354,31 @@ if __name__ == "__main__":
     df[[target, "Preparation_Time_min"]] = df[[target, "Preparation_Time_min"]].astype("float")
 
     y = pd.DataFrame(df.pop(target))
+
     cols = df.columns.tolist()
 
-    X_train, x_test, y_train, y_test = train_test_split(
+    x_train, x_test, y_train, y_test = train_test_split(
         df, y, test_size=0.3)
+    from sklearn.preprocessing import MinMaxScaler
+    bins = numpy.histogram_bin_edges(MinMaxScaler().fit_transform(y_train))
 
-    X_model = torch.from_numpy(X_train.values).float()
+    print(bins.shape)
+    X_model = torch.from_numpy(x_train.values).float()
 
     model = NeuralNetwork(feature_num=X_model.shape[1])
 
-    pre = EntropyPrecomputer(num_bins=num_bins, sigma=sigma)
-    pre.columns = cols
-    pre.discrete_columns = disc_cols
-    pre.set_max_min(X_train, y_train)
-    je_true_vector = pre.compute_je_vector(df, y)
-    del pre
+    # pre = EntropyPrecomputer(num_bins=num_bins, sigma=sigma)
+    # pre.columns = cols
+    # pre.discrete_columns = disc_cols
+    # pre.set_max_min(x_train, y_train)
+    # je_true_vector = pre.compute_je_vector(df, y)
+    # del pre
 
-    ref_mod = EntropyPrecomputer(num_bins=num_bins, sigma=sigma)
+    ref_mod = EntropyPrecomputer(bins=bins, sigma=sigma)
     ref_mod.columns = cols
 
-    loss_mod = EntropyMatcherLoss(num_bins=num_bins, sigma=sigma,
-                                  je_true_vector=je_true_vector,
+    loss_mod = EntropyMatcherLoss(bins=bins, sigma=sigma,
+                                  # je_true_vector=je_true_vector,
                                   lambda_entropy=lambda_entropy)
 
     trainer = RegressionTrainer(model, loss_mod, lr=1e-3, ref_model=ref_mod)
@@ -385,32 +399,48 @@ if __name__ == "__main__":
     mae = float(mean_absolute_error(y_true, preds))
     r2 = float(r2_score(y_true, preds))
 
-    plt.plot(losses)
+    # print(np.min(entrop_loss), np.max(entrop_loss), np.mean(entrop_loss), np.std(entrop_loss))
+    # plt.plot(losses, label="L")
     plt.title(f"Train Loss (MSE + λ·JE_match). RMSE: {rmse:.3f}, MAE: {mae:.3f}, R2: {r2:.3f}")
+    plt.plot(losses, label="entr_L")
     plt.xlabel("epoch")
     plt.ylabel("loss")
+    # plt.ylim([0, 1000])
     plt.grid()
+    plt.legend()
     plt.show()
+
     from scipy.signal import savgol_filter
+    plt.title("Diff b/w entropy estimated and entropy from numpy")
     plt.plot(savgol_filter(
         np.array(trainer.entr_pred) - np.array(trainer.entr_true),
-        window_length=200, polyorder=2),
-             label="Entropy pred")
-    # plt.plot(trainer.entr_true, label="Entropy true")
+        window_length=20, polyorder=2),
+             label="Entropy diff smoothed")
+    plt.plot(np.array(trainer.entr_pred) - np.array(trainer.entr_true),
+             alpha=0.5,
+             label="Entropy diff true")
     plt.xlabel("epoch")
     plt.ylabel("value")
     plt.grid()
     plt.legend()
     plt.show()
 
-    plt.scatter(y_true, preds, s=10, alpha=0.6)
-    plt.xlabel("y_true")
-    plt.ylabel("y_pred")
-    plt.title("Predictions vs True")
-    lims = [min(y_true.min(), preds.min()), max(y_true.max(), preds.max())]
-    plt.plot(lims, lims, 'r--', linewidth=1)
+    plt.plot(trainer.entr_pred, label="entr_pred")
+    plt.plot(trainer.entr_true, label="entr_true")
+    plt.xlabel("epoch")
+    plt.ylabel("value")
     plt.grid()
+    plt.legend()
     plt.show()
+
+    # plt.scatter(y_true, preds, s=10, alpha=0.6)
+    # plt.xlabel("y_true")
+    # plt.ylabel("y_pred")
+    # plt.title("Predictions vs True")
+    # lims = [min(y_true.min(), preds.min()), max(y_true.max(), preds.max())]
+    # plt.plot(lims, lims, 'r--', linewidth=1)
+    # plt.grid()
+    # plt.show()
 
     plt.plot(trainer.total_grad_norm_history, label="total_grad_norm")
     plt.title("Total gradient L2 norm per epoch")
@@ -419,5 +449,3 @@ if __name__ == "__main__":
     plt.grid()
     plt.legend()
     plt.show()
-
-
