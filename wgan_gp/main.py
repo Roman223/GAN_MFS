@@ -19,13 +19,65 @@ print("Torch cuda status: ", torch.cuda.is_available())
 
 
 class ToyDataset(Dataset):
+    """
+    A simple dataset class that stores a dataset.
+    
+          Methods:
+            - __init__: Initializes the dataset.
+            - __len__: Returns the number of samples in the dataset.
+            - __getitem__: Retrieves an item from the dataset.
+    
+          Attributes:
+            X (any): The dataset stored in the object.
+    """
+
     def __init__(self, dataset):
+        """
+        Initializes the ToyDataset with a given dataset.
+        
+        This initialization is a crucial step for downstream tasks, 
+        ensuring that the data is readily available for analysis and 
+        synthetic data generation. By storing the dataset, the class 
+        facilitates the comparison between real and synthetic data, 
+        a key aspect of evaluating the GAN's performance.
+        
+        Args:
+            dataset (any): The dataset to be stored. This dataset will be used 
+                           as the basis for generating synthetic data and 
+                           evaluating its utility.
+        
+        Returns:
+            None
+        
+        Class Fields:
+            X (any): The dataset stored in the object. This attribute holds 
+                     the original dataset, enabling subsequent analysis and 
+                     comparison with generated synthetic data.
+        """
         self.X = dataset
 
     def __len__(self):
+        """
+        Returns the number of samples in the dataset. This is crucial for understanding the size of the generated dataset and for iterating over it during training or evaluation of downstream models.
+        
+                Args:
+                    self: The instance of the ToyDataset class.
+        
+                Returns:
+                    int: The number of samples in the dataset, determined by the length of the input data (X attribute).
+        """
         return len(self.X)
 
     def __getitem__(self, idx):
+        """
+        Retrieves a data sample from the dataset. This is a crucial step for accessing individual data points, enabling the GAN to learn the underlying data distribution and generate realistic synthetic samples.
+        
+                Args:
+                    idx (int or torch.Tensor): Index of the item to retrieve. If a torch.Tensor is provided, it will be converted to a list.
+        
+                Returns:
+                    The data sample at the given index.
+        """
         # Convert idx from tensor to list due to pandas bug (that arises when using pytorch's random_split)
         if isinstance(idx, torch.Tensor):
             idx = idx.tolist()
