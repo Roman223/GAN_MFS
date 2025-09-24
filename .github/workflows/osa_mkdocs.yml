@@ -1,7 +1,7 @@
 name: MkDocs workflow
 on:
   push:
-    branches: ["main", "master"]
+    branches: ["main", "master", "osa_tool"]
   pull_request:
     branches: ["main", "master"]
 jobs:
@@ -21,5 +21,3 @@ jobs:
         run: pip install mkdocs mkdocs-material mkdocstrings[python]
       - name: "[OSA] MkDocs documentation deploying"
         run: mkdocs gh-deploy --force --config-file osa_mkdocs.yml
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
