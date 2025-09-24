@@ -5,15 +5,19 @@ try:
     from pymfe.mfe import MFE
 except ImportError:
     import warnings
-    warnings.warn("PYMFE module required to test pytorch versions of MFS implementations.")
+
+    warnings.warn(
+        "PYMFE module required to test pytorch versions of MFS implementations."
+    )
 
 import pandas as pd
 import numpy as np
 
+
 class MFEToTorch:
     """
     A class to compute meta-features using PyTorch.
-    
+
     This class provides methods to calculate various meta-features for a given
     dataset using PyTorch tensors. It includes functionalities for computing
     statistical measures, correlation, covariance, and other properties of the
@@ -60,7 +64,7 @@ class MFEToTorch:
     def feature_methods(self):
         """
         Returns a dictionary that maps feature names to their corresponding extraction methods.
-        
+
         This mapping is essential for calculating a comprehensive set of statistical
         properties on both real and synthetic datasets. These features are then
         used to evaluate the quality and utility of the generated synthetic data
@@ -92,16 +96,16 @@ class MFEToTorch:
 
     @staticmethod
     def ft_gravity_torch(
-            N: torch.Tensor,
-            y: torch.Tensor,
-            norm_ord: Union[int, float] = 2,
-            classes: Optional[torch.Tensor] = None,
-            class_freqs: Optional[torch.Tensor] = None,
-            cls_inds: Optional[torch.Tensor] = None,
+        N: torch.Tensor,
+        y: torch.Tensor,
+        norm_ord: Union[int, float] = 2,
+        classes: Optional[torch.Tensor] = None,
+        class_freqs: Optional[torch.Tensor] = None,
+        cls_inds: Optional[torch.Tensor] = None,
     ):
         """
         Computes the gravity between the majority and minority classes.
-        
+
         This method calculates the distance between the mean feature vectors of the
         majority and minority classes. This distance serves as a measure of class
         separation in the feature space. By computing this "gravity," the method
@@ -127,8 +131,12 @@ class MFEToTorch:
         ind_cls_maj = torch.argmax(class_freqs)
         class_maj = classes[ind_cls_maj]
 
-        remaining_classes = torch.cat((classes[:ind_cls_maj], classes[ind_cls_maj + 1:]))
-        remaining_freqs = torch.cat((class_freqs[:ind_cls_maj], class_freqs[ind_cls_maj + 1:]))
+        remaining_classes = torch.cat(
+            (classes[:ind_cls_maj], classes[ind_cls_maj + 1 :])
+        )
+        remaining_freqs = torch.cat(
+            (class_freqs[:ind_cls_maj], class_freqs[ind_cls_maj + 1 :])
+        )
 
         ind_cls_min = torch.argmin(remaining_freqs)
 
@@ -151,10 +159,10 @@ class MFEToTorch:
     def change_device(self, device):
         """
         Changes the device where computations will be performed.
-        
+
         Args:
             device (str): The target device (e.g., 'cpu', 'cuda').
-        
+
         This method is crucial for ensuring that the model and data reside on the same device,
         allowing for efficient computation and utilization of available hardware resources
         during the synthetic data generation and evaluation processes.
@@ -165,12 +173,12 @@ class MFEToTorch:
     def cov(tensor, rowvar=True, bias=False):
         """
         Estimates the covariance matrix of a given tensor, crucial for understanding the statistical relationships within the data. This is a key step in evaluating how well the generated synthetic data captures the underlying dependencies present in the original data.
-        
+
                 Args:
                     tensor (torch.Tensor): Input data tensor.
                     rowvar (bool, optional): If True (default), rows represent variables, with observations in the columns. If False, columns represent variables.
                     bias (bool, optional): If False (default), then the normalization is by N-1. Otherwise, normalization is by N.
-        
+
                 Returns:
                     torch.Tensor: The covariance matrix of the input tensor.
         """
@@ -182,7 +190,7 @@ class MFEToTorch:
     def corrcoef(self, tensor, rowvar=True):
         """
         Calculates the Pearson product-moment correlation coefficients, normalizing the covariance matrix by the standard deviations to obtain correlation values. This provides a measure of the linear relationship between variables in the input tensor, which is useful for comparing real and synthetic data.
-        
+
         Args:
             tensor (torch.Tensor): Input data tensor.
             rowvar (bool, optional): If True (default), rows represent variables, with observations in the columns. Otherwise, columns represent variables.
@@ -207,7 +215,7 @@ class MFEToTorch:
     def ft_cor_torch(self, N: torch.Tensor) -> torch.Tensor:
         """
         Calculates the absolute values of the lower triangle elements of a correlation matrix to quantify feature dependencies.
-        
+
         This method computes the correlation matrix of the input tensor `N`,
         extracts the elements from the lower triangle (excluding the diagonal),
         and returns the absolute values of these elements. This is done to summarize the relationships between features,
@@ -231,8 +239,8 @@ class MFEToTorch:
         return torch.abs(inf_triang_vals)
 
     def ft_cov_torch(
-            self,
-            N: torch.Tensor,
+        self,
+        N: torch.Tensor,
     ) -> torch.Tensor:
         """
         Calculates the absolute values of the lower triangular elements of the covariance matrix. This focuses on the relationships between variables, extracting the lower triangle to reduce redundancy and focusing on key covariance values. The absolute value ensures that the magnitude of the covariance is considered, regardless of the direction of the relationship.
@@ -254,7 +262,7 @@ class MFEToTorch:
     def ft_eigenvals(self, x: torch.Tensor) -> torch.Tensor:
         """
         Computes the eigenvalues of the covariance matrix of the input tensor.
-        
+
         This function is crucial for assessing the diversity and information
         content of the input data. By calculating the eigenvalues of the
         covariance matrix, we gain insights into the principal components
@@ -277,7 +285,7 @@ class MFEToTorch:
     def ft_iq_range(X: torch.Tensor) -> torch.Tensor:
         """
         Calculates the interquartile range (IQR) of a tensor along the first dimension.
-        
+
         The IQR is a measure of statistical dispersion, representing the difference between the 75th and 25th percentiles. This is useful for understanding the spread of the data, which helps to assess the utility of generated synthetic data by comparing its distribution to the real data.
 
         Args:
@@ -294,7 +302,7 @@ class MFEToTorch:
     def ft_kurtosis(x: torch.Tensor) -> torch.Tensor:
         """
         Calculates the kurtosis of a tensor.
-        
+
         This function computes the kurtosis of the input tensor `x`, a statistical measure
         describing the shape of the data's distribution, specifically its tailedness.
         By calculating kurtosis, we can assess how well the generated data's distribution
@@ -319,7 +327,7 @@ class MFEToTorch:
     def ft_skewness(x: torch.Tensor) -> torch.Tensor:
         """
         Computes the skewness of a tensor.
-        
+
         This function calculates the skewness of the input tensor, a key statistical
         measure reflecting the asymmetry of the data distribution. Preserving this characteristic
         is crucial when generating synthetic data to maintain the real data's statistical properties.
@@ -342,7 +350,7 @@ class MFEToTorch:
     def ft_mad(x: torch.Tensor, factor: float = 1.4826) -> torch.Tensor:
         """
         Compute the Median Absolute Deviation (MAD) of a tensor.
-        
+
         The MAD is a robust measure of statistical dispersion, useful for
         understanding the spread of data in both real and synthetic datasets.
         It helps assess how well the generated data captures the variability
@@ -366,7 +374,7 @@ class MFEToTorch:
     def ft_mean(N: torch.Tensor) -> torch.Tensor:
         """
         Computes the mean of a tensor along the first dimension to aggregate information across samples. This is useful for summarizing the central tendency of features in the generated or real data.
-        
+
         Args:
             N (torch.Tensor): The input tensor.
 
@@ -379,7 +387,7 @@ class MFEToTorch:
     def ft_max(N: torch.Tensor) -> torch.Tensor:
         """
         Finds the maximum value in a tensor along dimension 0. This is used to identify the most prominent features across a dataset, which is crucial for maintaining data utility in generated synthetic data.
-        
+
         Args:
             N (torch.Tensor): The input tensor.
 
@@ -392,7 +400,7 @@ class MFEToTorch:
     def ft_median(N: torch.Tensor) -> torch.Tensor:
         """
         Calculates the median of a tensor along the first dimension. This is used to derive a representative central tendency of the data distribution, which is a crucial aspect of maintaining data utility in synthetic data generation.
-        
+
         Args:
             N: The input tensor.
 
@@ -405,7 +413,7 @@ class MFEToTorch:
     def ft_min(N: torch.Tensor) -> torch.Tensor:
         """
         Finds the minimum value of a tensor along dimension 0, which is useful for identifying the smallest values across different samples when comparing real and synthetic data distributions.
-        
+
         Args:
             N (torch.Tensor): The input tensor.
 
@@ -418,7 +426,7 @@ class MFEToTorch:
     def ft_var(N):
         """
         Calculates the variance of a tensor along dimension 0. This is a crucial step in assessing the statistical similarity between real and synthetic datasets generated by the GAN, ensuring that the generated data captures the variability present in the original data.
-        
+
         Args:
             N (torch.Tensor): The input tensor.
 
@@ -431,7 +439,7 @@ class MFEToTorch:
     def ft_std(N):
         """
         Calculates the standard deviation of a tensor along the first dimension (dimension 0). This is used to understand the spread or dispersion of the generated synthetic data across different samples, ensuring the generated data maintains a similar statistical distribution to the real data.
-        
+
         Args:
             N (torch.Tensor): The input tensor representing a batch of generated samples.
 
@@ -444,10 +452,10 @@ class MFEToTorch:
     def ft_range(N: torch.Tensor) -> torch.Tensor:
         """
         Calculates the range of values (max - min) along the first dimension (dimension 0) of the input tensor. This is useful for understanding the spread or variability of the data along that dimension, which helps assess how well the generated data captures the characteristics of the original data.
-        
+
         Args:
             N: The input tensor.
-        
+
         Returns:
             torch.Tensor: A tensor containing the range (max - min) of values along dimension 0.
         """
@@ -456,7 +464,7 @@ class MFEToTorch:
     def ft_sparsity(self, N: torch.Tensor) -> torch.Tensor:
         """
         Calculates the feature sparsity of a given tensor.
-        
+
         This method computes the sparsity of each feature in the input tensor `N`.
         Sparsity is defined as the ratio of the total number of instances to the
         number of unique values for each feature, normalized to the range [0, 1].
@@ -482,11 +490,10 @@ class MFEToTorch:
 
         return result.to(self.device)
 
-
     def pad_only(self, tensor, target_len):
         """
         Pads a tensor with zeros to a specified length, ensuring consistent input sizes for subsequent processing steps. This is particularly useful when dealing with variable-length sequences that need to be batched or processed by models requiring fixed-size inputs.
-        
+
         Args:
             tensor (torch.Tensor): The input tensor to be padded.
             target_len (int): The desired length of the padded tensor.
@@ -503,7 +510,7 @@ class MFEToTorch:
     def get_mfs(self, X, y, subset=None):
         """
         Computes a set of meta-features on the input data. These meta-features capture essential characteristics of the dataset, which is crucial for evaluating and ensuring the utility of synthetic data generated by GANs.
-        
+
         Args:
             X (torch.Tensor): The input data tensor.
             y (torch.Tensor, optional): The target variable tensor. Required if 'gravity' is in the subset.
@@ -536,7 +543,7 @@ class MFEToTorch:
     def test_me(self, subset=None):
         """
         Compares meta-feature extraction using the `pymfe` package and the `MFEToTorch` class.
-        
+
         This method fetches the California Housing dataset, extracts meta-features using both `pymfe` and the `MFEToTorch` class, and then compares the results. This comparison helps validate the correctness and consistency of the meta-feature extraction process implemented in the `MFEToTorch` class, ensuring that it aligns with established meta-feature extraction tools.
 
         Args:
@@ -549,6 +556,7 @@ class MFEToTorch:
             subset = ["mean", "var"]
 
         from sklearn.datasets import fetch_california_housing
+
         bunch = fetch_california_housing(as_frame=True)
         X, y = bunch.data, bunch.target
         print(f"Init data shape: {X.shape} + {y.shape}")
@@ -558,19 +566,19 @@ class MFEToTorch:
         ft = mfe.extract()
 
         pymfe = pd.DataFrame(
-            map(lambda x: [x], ft[1]), index=ft[0], columns=["pymfe"]).dropna()
+            map(lambda x: [x], ft[1]), index=ft[0], columns=["pymfe"]
+        ).dropna()
 
         X_tensor = torch.tensor(X.values)
         y_tensor = torch.tensor(y)
 
         mfs = self.get_mfs(X_tensor, y_tensor, subset).numpy()
-        mfs_df = pd.DataFrame({'torch_mfs': list(mfs)})
+        mfs_df = pd.DataFrame({"torch_mfs": list(mfs)})
 
         mfs_df.index = subset
         # mfs_df = mfs_df.reindex(self.mfs_available)
 
         res = pymfe.merge(mfs_df, left_index=True, right_index=True, how="outer")
-
 
         def round_element(val, decimals=2):
             if isinstance(val, list):
@@ -582,5 +590,6 @@ class MFEToTorch:
         res = res.map(lambda x: round_element(x, 5)).dropna()
 
         print(res)
+
 
 # MFEToTorch().test_me(subset=["mean", "var", "eigenvalues", "gravity"])

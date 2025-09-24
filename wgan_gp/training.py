@@ -12,9 +12,11 @@ import ot
 PLOT_GRAPH = False
 try:
     from torchviz import make_dot
+
     PLOT_GRAPH = True
 except ImportError:
     import warnings
+
     warnings.warn("torchviz module required to plot computation graph.")
 
 from torch_topological.nn import WassersteinDistance
@@ -23,6 +25,7 @@ try:
     import statsmodels.api as sm
 except ImportError:
     import warnings
+
     warnings.warn("statsmodels module required to plot QQ plots.")
 
 from wgan_gp.pymfe_to_torch import MFEToTorch
@@ -32,14 +35,25 @@ from sklearn.decomposition import PCA
 class Trainer:
     """
     A base class for training generative adversarial networks (GANs).
-    
+
     This class provides a basic structure for training GANs, including methods for training
     the discriminator and generator, calculating gradient penalties, and generating samples.
     """
 
-    def __init__(self, generator, discriminator, gen_optimizer, dis_optimizer, batch_size, aim_track,
-                 gen_model_name, disable_tqdm=False,
-                 gp_weight=10, critic_iterations=5, device=torch.device('cpu')):
+    def __init__(
+        self,
+        generator,
+        discriminator,
+        gen_optimizer,
+        dis_optimizer,
+        batch_size,
+        aim_track,
+        gen_model_name,
+        disable_tqdm=False,
+        gp_weight=10,
+        critic_iterations=5,
+        device=torch.device("cpu"),
+    ):
         """
         Initializes the WGAN-GP trainer, setting up the necessary components for adversarial training
         to generate synthetic data.
@@ -68,7 +82,7 @@ class Trainer:
         self.G_opt = gen_optimizer
         self.D = discriminator
         self.D_opt = dis_optimizer
-        self.losses = {'G': [], 'D': [], 'GP': [], 'gradient_norm': []}
+        self.losses = {"G": [], "D": [], "GP": [], "gradient_norm": []}
         self.num_steps = 0
         self.device = device
         self.gp_weight = gp_weight
@@ -88,7 +102,7 @@ class Trainer:
     def total_grad_norm(model):
         """
         Computes the total gradient norm of a model's parameters.
-        
+
         Calculates the L2 norm of the gradients across all parameters in the model.
         This is useful for monitoring training and detecting potential issues like
         exploding gradients, ensuring stable training during synthetic data generation.
@@ -107,7 +121,7 @@ class Trainer:
             if p.grad is not None:
                 param_norm = p.grad.data.norm(2)
                 total_norm += param_norm.item() ** 2
-        return total_norm ** 0.5
+        return total_norm**0.5
 
     def _critic_train_iteration(self, data):
         """
@@ -129,7 +143,9 @@ class Trainer:
         self.D.train()  # just to be explicit
 
         # Move real data to device
-        data = data.to(self.device)  # assume self.device is torch.device('cuda' or 'cpu')
+        data = data.to(
+            self.device
+        )  # assume self.device is torch.device('cuda' or 'cpu')
 
         batch_size = data.size(0)
 
@@ -172,7 +188,7 @@ class Trainer:
 
         Returns:
             None. The generator loss is stored in `self.G_loss`.
-        
+
         Why:
             The generator is trained to produce synthetic data that can fool the discriminator.
             This function updates the generator's parameters to minimize the discriminator's
@@ -187,7 +203,7 @@ class Trainer:
 
         # Calculate loss and optimize
         d_generated = self.D(generated_data)
-        g_loss = - d_generated.mean()
+        g_loss = -d_generated.mean()
         g_loss.backward()
         self.G_opt.step()
 
@@ -197,7 +213,7 @@ class Trainer:
     def _gradient_penalty(self, real_data, generated_data):
         """
         Computes the gradient penalty for WGAN-GP.
-        
+
         This method calculates the gradient penalty, a regularization term used in Wasserstein
         GANs with gradient penalty (WGAN-GP). By penalizing the norm of discriminator gradients
         with respect to its input, we encourage the discriminator to have a smoother landscape.
@@ -227,12 +243,14 @@ class Trainer:
 
         # Compute gradients
         grad_outputs = torch.ones_like(prob_interpolated)
-        gradients = torch_grad(outputs=prob_interpolated,
-                               inputs=interpolated,
-                               grad_outputs=grad_outputs,
-                               create_graph=True,
-                               retain_graph=True,
-                               only_inputs=True)[0]
+        gradients = torch_grad(
+            outputs=prob_interpolated,
+            inputs=interpolated,
+            grad_outputs=grad_outputs,
+            create_graph=True,
+            retain_graph=True,
+            only_inputs=True,
+        )[0]
 
         gradients = gradients.view(batch_size, -1)
         gradients_norm = gradients.norm(2, dim=1)
@@ -286,7 +304,7 @@ class Trainer:
     def train(self, data_loader, epochs, plot_freq):
         """
         Trains the GAN model to generate synthetic data that mimics the distribution of the real data.
-        
+
         The training process involves iteratively updating the generator and discriminator
         networks to improve the quality and realism of the generated samples. The progress
         is monitored and visualized through loss tracking and sample plotting.
@@ -319,10 +337,13 @@ class Trainer:
                 samples = pca.fit_transform(samples[:, :-1])
                 real_data_sample = pca.fit_transform(real_data_sample[:, :-1])
 
-            plt.scatter(samples[:, 0], samples[:, 1],
-                        label="Synthetic", alpha=0.3)
-            plt.scatter(real_data_sample[:, 0], real_data_sample[:, 1],
-                        label="Real data", alpha=0.3)
+            plt.scatter(samples[:, 0], samples[:, 1], label="Synthetic", alpha=0.3)
+            plt.scatter(
+                real_data_sample[:, 0],
+                real_data_sample[:, 1],
+                label="Real data",
+                alpha=0.3,
+            )
 
             if pca:
                 plt.title(f"Explained var: {sum(pca.explained_variance_ratio_)}")
@@ -335,22 +356,28 @@ class Trainer:
                 self.aim_track.track(aim_fig, epoch=epoch, name="progress")
 
             if self.aim_track:
-                self.aim_track.track(self.G_loss.item(), name='loss G', epoch=epoch)
-                self.aim_track.track(self.D_loss.item(), name='loss D', epoch=epoch)
-                self.aim_track.track(self.total_grad_norm(self.G), name="total_norm_G", epoch=epoch)
-                self.aim_track.track(self.total_grad_norm(self.D), name="total_norm_D", epoch=epoch)
-                self.aim_track.track(self.GP_grad_norm, name="GP_grad_norm", epoch=epoch)
+                self.aim_track.track(self.G_loss.item(), name="loss G", epoch=epoch)
+                self.aim_track.track(self.D_loss.item(), name="loss D", epoch=epoch)
+                self.aim_track.track(
+                    self.total_grad_norm(self.G), name="total_norm_G", epoch=epoch
+                )
+                self.aim_track.track(
+                    self.total_grad_norm(self.D), name="total_norm_D", epoch=epoch
+                )
+                self.aim_track.track(
+                    self.GP_grad_norm, name="GP_grad_norm", epoch=epoch
+                )
 
     def sample_generator(self, num_samples):
         """
         Generates synthetic data samples using the generator network to augment the original dataset.
-        
+
         The generated samples aim to resemble the real data distribution, enhancing the dataset's
         utility for downstream tasks.
 
         Args:
             num_samples: The number of synthetic samples to generate.
-        
+
         Returns:
             The generated synthetic data samples.
         """
@@ -434,7 +461,9 @@ class TrainerModified(Trainer):
         sampled_tensor = tensor[indices_trunc[:n_samples]]
         return sampled_tensor
 
-    def calculate_mfs_torch(self, X: torch.Tensor, y: torch.Tensor = None) -> torch.Tensor:
+    def calculate_mfs_torch(
+        self, X: torch.Tensor, y: torch.Tensor = None
+    ) -> torch.Tensor:
         """
         Calculates the meta-feature statistics (MFS) to quantify statistical properties for
         preserving data utility in GAN-generated synthetic data.
@@ -461,7 +490,7 @@ class TrainerModified(Trainer):
     def total_grad_norm(model):
         """
         Computes the total gradient norm of a model's parameters.
-        
+
         Calculates the L2 norm of the gradients across all parameters in the model.
         This is useful for monitoring training and detecting potential issues like
         exploding gradients, ensuring stable training during synthetic data generation.
@@ -480,12 +509,12 @@ class TrainerModified(Trainer):
             if p.grad is not None:
                 param_norm = p.grad.data.norm(2)
                 total_norm += param_norm.item() ** 2
-        return total_norm ** 0.5
+        return total_norm**0.5
 
     def compute_loss_on_variates_wasserstein(self, fake_distribution):
         """
         Computes the Wasserstein loss to align generated and real data distributions.
-        
+
         This method calculates the Wasserstein distance between the target meta-feature
         statistics (MFS) and the MFS generated from the fake data distribution. It first
         calculates the MFS for each variate in the fake distribution, reshapes them, and
@@ -533,7 +562,7 @@ class TrainerModified(Trainer):
     def wasserstein_distance_2d(self, x1, x2):
         """
         Compute the Wasserstein distance between two 2D point clouds.
-        
+
         This method calculates the Earth Mover's Distance (EMD), also known as the
         Wasserstein distance, between two sets of 2D points. It assumes that both
         point clouds have equal weights assigned to each point. This distance is used
@@ -633,20 +662,26 @@ class TrainerModified(Trainer):
 
         if isinstance(self.mfs_lambda, list):
             mfs_lambda = torch.Tensor(self.mfs_lambda).to(self.device)
-            mfs_dist = self.wasserstein_loss_mfs(fake_mfs, self.target_mfs["other_mfs"], average=False)
+            mfs_dist = self.wasserstein_loss_mfs(
+                fake_mfs, self.target_mfs["other_mfs"], average=False
+            )
 
             loss_mfs = mfs_lambda @ mfs_dist
         elif isinstance(self.mfs_lambda, float):
-            mfs_dist = self.wasserstein_loss_mfs(fake_mfs, self.target_mfs["other_mfs"], average=True)
+            mfs_dist = self.wasserstein_loss_mfs(
+                fake_mfs, self.target_mfs["other_mfs"], average=True
+            )
             loss_mfs = self.mfs_lambda * mfs_dist
         else:
             raise TypeError("mfs_lambda must be either a list or a float")
 
-        g_loss = - d_generated.mean() + loss_mfs
+        g_loss = -d_generated.mean() + loss_mfs
 
         if PLOT_GRAPH:
             if not os.path.isfile("mod_computation_graph_G_loss.png"):
-                make_dot(g_loss, show_attrs=True).render("mod_computation_graph_G_loss", format="png")
+                make_dot(g_loss, show_attrs=True).render(
+                    "mod_computation_graph_G_loss", format="png"
+                )
 
         g_loss.backward()
         self.G_opt.step()
@@ -659,7 +694,7 @@ class TrainerModified(Trainer):
     def plot_grad_flow(named_parameters, title="Gradient flow"):
         """
         Plots the gradient flow through the layers of a neural network to assess training dynamics.
-        
+
         This method calculates and visualizes the average gradient magnitude
         for each layer of the network, excluding bias parameters. By observing the gradient flow,
         one can identify layers that might be hindering the learning process due to vanishing
@@ -684,7 +719,7 @@ class TrainerModified(Trainer):
         plt.plot(ave_grads, alpha=0.7, marker="o", color="c")
         plt.hlines(0, 0, len(ave_grads), linewidth=1, color="k")
         plt.xticks(rotation="vertical")
-        plt.xticks(range(len(layers)), layers, rotation='vertical', fontsize=8)
+        plt.xticks(range(len(layers)), layers, rotation="vertical", fontsize=8)
         plt.xlabel("Layer")
         plt.ylabel("Avg Gradient Magnitude")
         plt.title(title)
@@ -708,7 +743,9 @@ class TrainerModified(Trainer):
         Returns:
             matplotlib.figure.Figure: The matplotlib figure containing the QQ plot.
         """
-        detached_target = self.target_mfs["other_mfs"].cpu().detach().numpy().reshape(-1, 2)
+        detached_target = (
+            self.target_mfs["other_mfs"].cpu().detach().numpy().reshape(-1, 2)
+        )
         mfs_batch_ = mfs_batch.reshape(-1, 2)
         plt.figure()
         plt.hist(detached_target)
@@ -720,7 +757,7 @@ class TrainerModified(Trainer):
     def train(self, data_loader, epochs, plot_freq):
         """
         Trains the GAN model to generate synthetic data that mimics the statistical properties of the real data.
-        
+
         The training process involves updating the generator and discriminator networks iteratively
         to improve the quality and utility of the generated samples. The method also tracks
         various metrics and visualizations to monitor the training progress and evaluate the
@@ -750,11 +787,15 @@ class TrainerModified(Trainer):
             # samples = [self.sample_generator(self.batch_size) for _ in range(self.sample_number)]
             samples = self.sample_generator(self.batch_size).cpu().detach().numpy()
 
-            self.aim_track.track(self.G_loss.item(), name='loss G', epoch=epoch)
-            self.aim_track.track(self.D_loss.item(), name='loss D', epoch=epoch)
-            self.aim_track.track(self.mfs_loss, name='loss MFS', epoch=epoch)
-            self.aim_track.track(self.total_grad_norm(self.G), name="total_norm_G", epoch=epoch)
-            self.aim_track.track(self.total_grad_norm(self.D), name="total_norm_D", epoch=epoch)
+            self.aim_track.track(self.G_loss.item(), name="loss G", epoch=epoch)
+            self.aim_track.track(self.D_loss.item(), name="loss D", epoch=epoch)
+            self.aim_track.track(self.mfs_loss, name="loss MFS", epoch=epoch)
+            self.aim_track.track(
+                self.total_grad_norm(self.G), name="total_norm_G", epoch=epoch
+            )
+            self.aim_track.track(
+                self.total_grad_norm(self.D), name="total_norm_D", epoch=epoch
+            )
             self.aim_track.track(self.GP_grad_norm, name="GP_grad_norm", epoch=epoch)
 
             if epoch % plot_freq == 0:
@@ -765,10 +806,13 @@ class TrainerModified(Trainer):
                     samples = pca.fit_transform(samples[:, :-1])
                     real_data_sample = pca.fit_transform(real_data_sample[:, :-1])
 
-                plt.scatter(samples[:, 0], samples[:, 1],
-                            label="Synthetic", alpha=0.3)
-                plt.scatter(real_data_sample[:, 0], real_data_sample[:, 1],
-                            label="Real data", alpha=0.3)
+                plt.scatter(samples[:, 0], samples[:, 1], label="Synthetic", alpha=0.3)
+                plt.scatter(
+                    real_data_sample[:, 0],
+                    real_data_sample[:, 1],
+                    label="Real data",
+                    alpha=0.3,
+                )
 
                 if pca:
                     plt.title(f"Explained var: {sum(pca.explained_variance_ratio_)}")
@@ -791,8 +835,12 @@ class TrainerModified(Trainer):
                 # aim_fig = Image(fig)
                 # self.aim_track.track(aim_fig, epoch=epoch, name="progress")
 
-                fig_G = self.plot_grad_flow(self.G.named_parameters(), title="G gradient flow")
-                fig_D = self.plot_grad_flow(self.D.named_parameters(), title="D gradient flow")
+                fig_G = self.plot_grad_flow(
+                    self.G.named_parameters(), title="G gradient flow"
+                )
+                fig_D = self.plot_grad_flow(
+                    self.D.named_parameters(), title="D gradient flow"
+                )
 
                 # fig_mfs_distr = self.plot_qq_plot(
                 #     mfs_batch=np.asarray([self.calculate_mfs_torch(X).cpu().detach().numpy() for X in samples]))
