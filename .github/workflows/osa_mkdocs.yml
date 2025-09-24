@@ -21,3 +21,5 @@ jobs:
         run: pip install mkdocs mkdocs-material mkdocstrings[python]
       - name: "[OSA] MkDocs documentation deploying"
         run: mkdocs gh-deploy --force --config-file osa_mkdocs.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
