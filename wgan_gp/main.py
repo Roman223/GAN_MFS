@@ -5,15 +5,18 @@ import matplotlib.pyplot as plt
 import torch
 import numpy as np
 from pprint import pprint
-from models import Generator, Discriminator
-from training import Trainer, TrainerModified
+
+from wgan_gp.models import Generator, Discriminator
+from wgan_gp.training import Trainer, TrainerModified
+from wgan_gp.utils import create_joint, calc_metrics, estimate_marginal_js, calc_utility_metrics, create_variates
+
 import aim
+
 from sklearn.datasets import make_moons, fetch_california_housing, make_regression
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from naive_try.utils import create_variates
-import seaborn as sns
-from naive_try.utils import create_joint, calc_metrics, estimate_marginal_js, calc_utility_metrics
+
+
 
 print("Torch cuda status: ", torch.cuda.is_available())
 
@@ -21,12 +24,12 @@ print("Torch cuda status: ", torch.cuda.is_available())
 class ToyDataset(Dataset):
     """
     A simple dataset class that stores a dataset.
-    
+
           Methods:
             - __init__: Initializes the dataset.
             - __len__: Returns the number of samples in the dataset.
             - __getitem__: Retrieves an item from the dataset.
-    
+
           Attributes:
             X (any): The dataset stored in the object.
     """
@@ -34,24 +37,24 @@ class ToyDataset(Dataset):
     def __init__(self, dataset):
         """
         Initializes the ToyDataset with a given dataset.
-        
-        This initialization is a crucial step for downstream tasks, 
-        ensuring that the data is readily available for analysis and 
-        synthetic data generation. By storing the dataset, the class 
-        facilitates the comparison between real and synthetic data, 
+
+        This initialization is a crucial step for downstream tasks,
+        ensuring that the data is readily available for analysis and
+        synthetic data generation. By storing the dataset, the class
+        facilitates the comparison between real and synthetic data,
         a key aspect of evaluating the GAN's performance.
-        
+
         Args:
-            dataset (any): The dataset to be stored. This dataset will be used 
-                           as the basis for generating synthetic data and 
+            dataset (any): The dataset to be stored. This dataset will be used
+                           as the basis for generating synthetic data and
                            evaluating its utility.
-        
+
         Returns:
             None
-        
+
         Class Fields:
-            X (any): The dataset stored in the object. This attribute holds 
-                     the original dataset, enabling subsequent analysis and 
+            X (any): The dataset stored in the object. This attribute holds
+                     the original dataset, enabling subsequent analysis and
                      comparison with generated synthetic data.
         """
         self.X = dataset
@@ -59,10 +62,10 @@ class ToyDataset(Dataset):
     def __len__(self):
         """
         Returns the number of samples in the dataset. This is crucial for understanding the size of the generated dataset and for iterating over it during training or evaluation of downstream models.
-        
+
                 Args:
                     self: The instance of the ToyDataset class.
-        
+
                 Returns:
                     int: The number of samples in the dataset, determined by the length of the input data (X attribute).
         """
@@ -71,10 +74,10 @@ class ToyDataset(Dataset):
     def __getitem__(self, idx):
         """
         Retrieves a data sample from the dataset. This is a crucial step for accessing individual data points, enabling the GAN to learn the underlying data distribution and generate realistic synthetic samples.
-        
+
                 Args:
                     idx (int or torch.Tensor): Index of the item to retrieve. If a torch.Tensor is provided, it will be converted to a list.
-        
+
                 Returns:
                     The data sample at the given index.
         """
@@ -89,7 +92,7 @@ MFS_ENABLED = True
 learning_params = dict(
     plot_freq=100,
     # Hyper parameters
-    epochs=1000,
+    epochs=10,
     learning_rate_D=0.0001,
     learning_rate_G=0.0001,
     # Dynamics
@@ -105,8 +108,8 @@ learning_params = dict(
 
 if MFS_ENABLED:
     learning_params |= dict(
-        # mfs_lambda = .1,
-        mfs_lambda = [.1, 2.],
+        mfs_lambda = .1,
+        # mfs_lambda = [.1, 2.],
         # subset_mfs=["cor", "cov", "mean", "var", "eigenvalues", "iq_range"],
         subset_mfs=["mean", "var"],
         sample_number=10,
@@ -179,7 +182,7 @@ for _ in range(eval_number):
                                  betas=learning_params["betas"])
         D_optimizer = optim.Adam(discriminator.parameters(), lr=learning_params["learning_rate_D"],
                                  betas=learning_params["betas"])
-        tracker = aim.Run(experiment="WGAN-GP")
+        tracker = aim.Run(experiment="WGAN-GP", repo="../.aim")
 
         tracker['hparams'] = {
             'critic_iterations': critic_iteration,
@@ -277,9 +280,9 @@ for _ in range(eval_number):
 
         tracker["metrics"] = metrics
 
-        sample = pd.DataFrame(
-            trainer.sample_generator(real_ds_size[0]).cpu().detach().numpy(),
-            columns=cols + ["target"])
+        # sample = pd.DataFrame(
+        #     trainer.sample_generator(real_ds_size[0]).cpu().detach().numpy(),
+        #     columns=cols + ["target"])
 
         # r = pd.DataFrame(
         #     X,

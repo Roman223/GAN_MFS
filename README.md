@@ -1,88 +1,263 @@
-# GAN_MFS
+# WGAN-GP with Meta-Feature Statistics (MFS)
 
----
+A PyTorch implementation of Wasserstein GAN with Gradient Penalty (WGAN-GP) enhanced with meta-feature statistics preservation for high-quality synthetic tabular data generation.
 
-[![OSA-improved](https://img.shields.io/badge/improved%20by-OSA-yellow)](https://github.com/aimclub/OSA)
+## Features
 
----
+- **WGAN-GP Implementation**: Stable GAN training with Wasserstein distance and gradient penalty
+- **Meta-Feature Statistics (MFS) Integration**: Preserves statistical properties of the original data
+- **Comprehensive Evaluation**: Multiple utility and fidelity metrics for synthetic data assessment
+- **Experiment Tracking**: Built-in Aim tracking for monitoring training progress
+- **Flexible Architecture**: Configurable generator and discriminator architectures
+- **Multi-Dataset Support**: Tested on various tabular datasets including Abalone and California Housing
 
-## Overview
+## Architecture
 
-GAN_MFS introduces a novel approach to synthetic data generation, focusing on creating datasets that closely mirror real-world data while preserving the utility of specific features. It addresses the challenge of generating high-quality synthetic data, particularly when real data is limited or sensitive. The core innovation lies in incorporating Marginal Feature Significance (MFS) into the training of Wasserstein GANs with Gradient Penalty (WGAN-GP), guiding the generator to maintain the significance of targeted features. This methodology, supported by aim tracking for monitoring training progress, enhances the fidelity of synthetic data by aligning meta-feature distributions between real and synthetic datasets. The project contributes to research on improving synthetic data generation techniques, demonstrating enhanced downstream utility and correlation alignment compared to existing methods, as highlighted in the associated research paper.
+The project implements two main training approaches:
 
----
+1. **Vanilla WGAN-GP**: Standard WGAN-GP implementation
+2. **MFS-Enhanced WGAN-GP**: WGAN-GP with additional meta-feature statistics preservation loss
 
-## Table of Contents
+### Key Components
 
-- [Content](#content)
-- [Algorithms](#algorithms)
-- [Installation](#installation)
-- [Getting Started](#getting-started)
-- [Citation](#citation)
-
----
-## Content
-
-The GAN_MFS project centers on generating synthetic tabular data using a Wasserstein GAN with Gradient Penalty (WGAN-GP), enhanced by Marginal Feature Significance (MFS). The core objective is to create synthetic datasets that closely mirror real-world data, particularly in preserving the utility of specific features relevant to downstream tasks. The architecture includes generator and discriminator models, a training loop with gradient penalty for stable training, and MFS-based feature selection. Meta-feature extraction is used to compute statistical descriptors, guiding the generator to align distributions between real and synthetic data. Aim tracking is implemented to monitor training progress. This approach supports data augmentation and privacy preservation, creating high-quality synthetic data for various applications.
-
----
-
-## Algorithms
-
-The project implements a Wasserstein Generative Adversarial Network with Gradient Penalty (WGAN-GP) to generate synthetic tabular data. The WGAN-GP framework stabilizes GAN training using a gradient penalty, ensuring the discriminator adheres to the Lipschitz constraint, which is crucial for reliable synthetic data generation. To enhance the utility of the generated data, Marginal Feature Significance (MFS) is incorporated. MFS guides the generator to preserve the significance of specific features by aligning meta-feature distributions between real and synthetic data using the Wasserstein distance. This targeted feature selection improves the fidelity and relevance of the synthetic data for downstream tasks, such as data augmentation and privacy preservation.
-
----
+- **Generator**: Residual network-based generator with configurable dimensions
+- **Discriminator**: Multi-layer discriminator with LeakyReLU activations
+- **MFS Manager**: PyTorch implementation of meta-feature extraction (correlation, covariance, eigenvalues, etc.)
+- **Wasserstein Distance**: Topological distance computation for MFS alignment
 
 ## Installation
 
-Install GAN_MFS using one of the following methods:
-
-**Build from source:**
-
-1. Clone the GAN_MFS repository:
-```sh
+1. Clone the repository:
+```bash
 git clone https://github.com/Roman223/GAN_MFS
-```
-
-2. Navigate to the project directory:
-```sh
 cd GAN_MFS
 ```
 
----
+2. Install dependencies:
+```bash
+pip install -r req.txt
+```
 
-## Getting Started
+## Usage
 
-Since [Aim tracking](https://aimstack.readthedocs.io/en/latest/) is implemented, it is strongly advised to utilize it for tracking and visualizing the training process. Please refer to the Aim documentation for detailed instructions on how to integrate and use Aim within your project.
+### Basic Training
 
----
+```python
+from wgan_gp_main import *
+from wgan_gp.models import Generator, Discriminator
+from wgan_gp.training import Trainer, TrainerModified
+
+# Configure hyperparameters
+learning_params = {
+    'epochs': 1000,
+    'learning_rate_D': 0.0001,
+    'learning_rate_G': 0.0001,
+    'batch_size': 64,
+    'gp_weight': 10,
+    'generator_dim': (64, 128, 64),
+    'discriminator_dim': (64, 128, 64),
+    'emb_dim': 32,
+}
+
+# For MFS-enhanced training
+learning_params.update({
+    'mfs_lambda': [0.1, 2.0],  # or single float value
+    'subset_mfs': ['mean', 'var', 'eigenvalues'],
+    'sample_number': 10,
+    'sample_frac': 0.5,
+})
+
+# Initialize and train model
+trainer = TrainerModified(...)  # or Trainer() for vanilla WGAN-GP
+trainer.train(data_loader, epochs, plot_freq=100)
+```
+
+## Data Preparation
+
+The project expects tabular data with the target variable. Example preprocessing:
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+# Load your data
+data = pd.read_csv('your_data.csv')
+y = data.pop('target').values
+X = data.values
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+# Combine features and target for training
+training_data = np.hstack([X_train, y_train.reshape(-1, 1)])
+```
+
+## Meta-Feature Statistics (MFS)
+
+The MFS component preserves important statistical properties of the original data:
+
+### Supported Meta-Features
+
+- **Statistical**: mean, variance, standard deviation, range, min, max, median
+- **Distributional**: skewness, kurtosis, interquartile range
+- **Relational**: correlation matrix, covariance matrix, eigenvalues
+- **Advanced**: sparsity, mad (median absolute deviation)
+
+### MFS Loss Function
+
+The generator loss combines adversarial loss with MFS preservation:
+
+```python
+g_loss = d_generated.mean() + λ * wasserstein_distance(mfs_real, mfs_synthetic)
+```
+
+## Evaluation Metrics
+
+The project includes comprehensive evaluation metrics:
+
+### Utility Metrics
+
+- **R² Score**: Regression performance preservation
+- **RMSE**: Root mean squared error
+- **MAPE**: Mean absolute percentage error
+
+### Fidelity Metrics
+
+- **Correlation Matrix Distance**: Cosine distance between correlation matrices
+- **Jensen-Shannon Divergence**: Marginal distribution similarity
+- **Topological Distance**: Persistent homology-based comparison
+
+## Experiment Tracking
+
+Aim tracking is implemented and strongly advised for monitoring:
+
+- Training losses (Generator, Discriminator, MFS)
+- Gradient norms and flow visualization
+- Sample quality progression
+- Comprehensive metrics logging
+
+Instead, use:
+```python
+import aim
+tracker = aim.Run(experiment="WGAN-GP")
+tracker[hparams] = learning_params
+```
+
+## Project Structure
+
+```
+wgan_gp/
+    __init__.py
+    main.py                 # Main training script
+    models.py               # Generator and Discriminator definitions
+    training.py             # Training loops and MFS integration
+    pymfe_to_torch.py       # PyTorch meta-feature extraction
+    utils.py                # Utility functions and metrics
+    req.txt                 # Dependencies
+    gitignore               # Git ignore file
+    README.md               # This file
+```
+
+## Key Dependencies
+
+- **PyTorch**: Deep learning framework
+- **Aim**: Experiment tracking
+- **scikit-learn**: Machine learning utilities
+- **pandas/numpy**: Data manipulation
+- **matplotlib/seaborn**: Visualization
+- **torch-topological**: Topological data analysis
+- **POT**: Optimal transport (Wasserstein distance)
+- **pymfe**: Meta-feature extraction
+- **xgboost**: Gradient boosting for utility metrics
+
+## Documentation
+
+This project includes comprehensive self-hosted documentation built with MkDocs and Material theme. The documentation provides detailed API references, usage examples, and theoretical background.
+
+### Building and Running Documentation Locally
+
+To build and serve the documentation locally:
+
+1. **Install documentation dependencies** (if not already installed):
+```bash
+pip install mkdocs-material 'mkdocstrings[python]'
+```
+
+2. **Serve the documentation** locally:
+```bash
+mkdocs serve --config-file osa_mkdocs.yml
+```
+
+3. **Access the documentation** at `http://localhost:8000`
+
+The documentation includes:
+- **API Reference**: Auto-generated from docstrings using mkdocstrings
+- **Module Documentation**: Detailed explanations of each component
+- **Usage Examples**: Code samples and tutorials
+- **Meta-Feature Statistics Table**: Complete reference of all available MFS features
+
+### Building Static Documentation
+
+To build static HTML files for deployment:
+
+```bash
+mkdocs build -f osa_mkdocs.yml
+```
+
+The generated documentation will be available in the `site/` directory and can be deployed to any static hosting service.
+
+## Configuration
+
+Key hyperparameters can be configured in `main.py`:
+
+```python
+learning_params = dict(
+    epochs=1000,                    # Training epochs
+    learning_rate_D=0.0001,         # Discriminator learning rate
+    learning_rate_G=0.0001,         # Generator learning rate
+    batch_size=64,                  # Batch size
+    gp_weight=10,                   # Gradient penalty weight
+    generator_dim=(64,128,64),      # Generator architecture
+    discriminator_dim=(64,128,64),  # Discriminator architecture
+    mfs_lambda=0.1,           # MFS loss weights
+    subset_mfs=['mean','var'],      # Selected meta-features
+    sample_number=10,               # Number of variates for MFS
+    sample_frac=0.5,                # Fraction for variate sampling
+)
+```
+
+## Results
+
+The model generates high-quality synthetic tabular data that preserves:
+
+- Statistical distributions of original features
+- Correlational structure between variables
+- Utility for downstream machine learning tasks
+- Topological properties of the data manifold
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Citation
 
-If you use this software, please cite it as below.
+If you use this code in your research, please cite:
 
-### APA format:
+```bibtex
+@misc{wgan_gp_mfs,
+    title={WGAN-GP with Meta-Feature Statistics for Synthetic Tabular Data Generation},
+    author={[Your Name]},
+    year={2024},
+    url={https://github.com/your-username/your-repo}
+}
+```
 
-    Roman223 (2025). GAN_MFS repository [Computer software]. https://github.com/Roman223/GAN_MFS
+## Acknowledgments
 
-### BibTeX format:
-
-    @misc{GAN_MFS,
-
-        author = {Roman223},
-
-        title = {GAN_MFS repository},
-
-        year = {2025},
-
-        publisher = {github.com},
-
-        journal = {github.com repository},
-
-        howpublished = {\url{https://github.com/Roman223/GAN_MFS.git}},
-
-        url = {https://github.com/Roman223/GAN_MFS.git}
-
-    }
-
----
+- Original WGAN-GP paper: Improved Training of Wasserstein GANs  
+- PyMFE library for meta-feature extraction inspiration  
+- Aim team for excellent experiment tracking tools

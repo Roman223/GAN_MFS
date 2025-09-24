@@ -1,47 +1,44 @@
-site_name: OSADocs
+site_name: GAN_MFS Documentation
+site_description: WGAN-GP with Meta-Feature Statistics for Synthetic Tabular Data Generation
 docs_dir: osa_docs
+
+nav:
+  - Home: index.md
+  - Utils: utils.md
+  - WGAN-GP:
+    - Overview: wgan_gp/index.md
+    - Models: wgan_gp/models.md
+    - Training: wgan_gp/training.md
+    - PyMFE to Torch: wgan_gp/pymfe_to_torch.md
+
 theme:
   name: material
-  locale: en
   palette:
-  # Palette toggle for light mode
-  - media: "(prefers-color-scheme: light)"
-    scheme: default
-    toggle:
-      icon: material/brightness-7
-      name: Switch to dark mode
-  # Palette toggle for dark mode
-  - media: "(prefers-color-scheme: dark)"
-    scheme: slate
-    toggle:
-      icon: material/brightness-7
-      name: Switch to light mode
+    - scheme: default
+      primary: deep blue
+      accent: blue
   features:
-    - navigation.tracking
-    - navigation.instant
     - navigation.tabs
-    - navigation.tabs.sticky
-    - navigation.footer
-    - navigation.indexes
-    - content.tabs.link
-    - content.code.copy
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+
 plugins:
   - search
-  - mkdocstrings
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["."]
+          options:
+            show_source: true
+            show_root_heading: true
+            show_root_toc_entry: false
+            docstring_style: google
 
 markdown_extensions:
   - admonition
   - codehilite
-  - footnotes
-  - meta
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - toc:
-      permalink: True
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.tabbed
+  - toc:
+      permalink: true

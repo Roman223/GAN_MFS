@@ -8,12 +8,24 @@ import matplotlib.pyplot as plt
 from aim import Image
 
 import ot
-import numpy as np
-from torchviz import make_dot
+
+PLOT_GRAPH = False
+try:
+    from torchviz import make_dot
+    PLOT_GRAPH = True
+except ImportError:
+    import warnings
+    warnings.warn("torchviz module required to plot computation graph.")
 
 from torch_topological.nn import WassersteinDistance
-import statsmodels.api as sm
-from naive_try.wgan_gp.pymfe_to_torch import MFEToTorch
+
+try:
+    import statsmodels.api as sm
+except ImportError:
+    import warnings
+    warnings.warn("statsmodels module required to plot QQ plots.")
+
+from wgan_gp.pymfe_to_torch import MFEToTorch
 from sklearn.decomposition import PCA
 
 
@@ -21,50 +33,36 @@ class Trainer:
     """
     A base class for training generative adversarial networks (GANs).
     
-        This class provides a basic structure for training GANs, including methods for training the discriminator and generator, calculating gradient penalties, and generating samples.
-    
-        Class Methods:
-        - __init__:
+    This class provides a basic structure for training GANs, including methods for training
+    the discriminator and generator, calculating gradient penalties, and generating samples.
     """
 
     def __init__(self, generator, discriminator, gen_optimizer, dis_optimizer, batch_size, aim_track,
                  gen_model_name, disable_tqdm=False,
                  gp_weight=10, critic_iterations=5, device=torch.device('cpu')):
         """
-        Initializes the WGAN-GP trainer, setting up the necessary components for adversarial training to generate synthetic data.
-        
-                This method prepares the generator and discriminator networks, configures their respective optimizers, and establishes the training loop parameters. It's crucial for ensuring that the GAN training process is correctly initialized, allowing the generator to learn how to create realistic synthetic samples while the discriminator learns to distinguish between real and generated data.
-        
-                Args:
-                    generator: The generator network.
-                    discriminator: The discriminator network.
-                    gen_optimizer: The optimizer for the generator.
-                    dis_optimizer: The optimizer for the discriminator.
-                    batch_size: The batch size for training.
-                    aim_track: A dictionary for tracking training progress with Aim.
-                    gen_model_name: The name of the generator model.
-                    disable_tqdm: Whether to disable tqdm progress bar. Defaults to False.
-                    gp_weight: The weight of the gradient penalty. Defaults to 10.
-                    critic_iterations: The number of discriminator iterations per generator iteration. Defaults to 5.
-                    device: The device to use for training (e.g., 'cuda' or 'cpu'). Defaults to torch.device('cpu').
-                
-                Returns:
-                    None
-                
-                Class Fields:
-                    G (torch.nn.Module): The generator network.
-                    G_opt (torch.optim.Optimizer): The optimizer for the generator.
-                    D (torch.nn.Module): The discriminator network.
-                    D_opt (torch.optim.Optimizer): The optimizer for the discriminator.
-                    losses (dict): A dictionary to store the generator, discriminator, and gradient penalty losses.
-                    num_steps (int): The number of training steps.
-                    device (torch.device): The device used for training.
-                    gp_weight (float): The weight of the gradient penalty.
-                    critic_iterations (int): The number of discriminator iterations per generator iteration.
-                    batch_size (int): The batch size for training.
-                    num_batches_per_epoch (int): The number of batches per epoch. Initialized to 0.
-                    aim_track (dict): A dictionary for tracking training progress with Aim.
-                    disable (bool): Whether to disable tqdm progress bar.
+        Initializes the WGAN-GP trainer, setting up the necessary components for adversarial training
+        to generate synthetic data.
+        This method prepares the generator and discriminator networks, configures their respective
+        optimizers, and establishes the training loop parameters. It's crucial for ensuring that
+        the GAN training process is correctly initialized, allowing the generator to learn how to
+        create realistic synthetic samples while the discriminator learns to distinguish between
+        real and generated data.
+
+        Args:
+            generator: The generator network.
+            discriminator: The discriminator network.
+            gen_optimizer: The optimizer for the generator.
+            dis_optimizer: The optimizer for the discriminator.
+            batch_size: The batch size for training.
+            aim_track: A dictionary for tracking training progress with Aim.
+            gen_model_name: The name of the generator model.
+            disable_tqdm: Whether to disable tqdm progress bar. Defaults to False.
+            gp_weight: The weight of the gradient penalty. Defaults to 10.
+            critic_iterations: The number of discriminator iterations per generator iteration.
+                Defaults to 5.
+            device: The device to use for training (e.g., 'cuda' or 'cpu').
+                Defaults to torch.device('cpu').
         """
         self.G = generator
         self.G_opt = gen_optimizer
@@ -91,18 +89,18 @@ class Trainer:
         """
         Computes the total gradient norm of a model's parameters.
         
-                Calculates the L2 norm of the gradients across all parameters in the model.
-                This is useful for monitoring training and detecting potential issues like
-                exploding gradients, ensuring stable training during synthetic data generation.
-                By monitoring the gradient norm, we can ensure that the generator and discriminator
-                are learning effectively and prevent instability, which is crucial for producing
-                high-quality synthetic data that preserves the utility of the original dataset.
-        
-                Args:
-                    model: The model whose gradients are to be evaluated.
-        
-                Returns:
-                    float: The total gradient norm.
+        Calculates the L2 norm of the gradients across all parameters in the model.
+        This is useful for monitoring training and detecting potential issues like
+        exploding gradients, ensuring stable training during synthetic data generation.
+        By monitoring the gradient norm, we can ensure the generator and discriminator
+        are learning effectively and prevent instability, which is crucial for producing
+        high-quality synthetic data that preserves the utility of the original dataset.
+
+        Args:
+            model: The model whose gradients are to be evaluated.
+
+        Returns:
+            float: The total gradient norm.
         """
         total_norm = 0
         for p in model.parameters():
@@ -113,13 +111,19 @@ class Trainer:
 
     def _critic_train_iteration(self, data):
         """
-        Trains the critic (discriminator) for one iteration to distinguish between real and generated data. The critic's objective is to maximize the difference between its output for real and generated samples, along with a gradient penalty to enforce the Lipschitz constraint. This step is crucial for improving the generator's ability to create realistic synthetic data by providing a strong adversary.
-        
-                Args:
-                    data (torch.Tensor): A batch of real data samples.
-        
-                Returns:
-                    None. The critic's loss is tracked in `self.D_loss`.
+        Trains the critic (discriminator) for one iteration to distinguish between real and
+        generated data.
+
+        The critic's objective is to maximize the difference between its output for real and
+        generated samples, along with a gradient penalty to enforce the Lipschitz constraint.
+        This step is crucial for improving the generator's ability to create realistic
+        synthetic data by providing a strong adversary.
+
+        Args:
+            data (torch.Tensor): A batch of real data samples.
+
+        Returns:
+            None. The critic's loss is tracked in `self.D_loss`.
         """
         self.D_opt.zero_grad()
         self.D.train()  # just to be explicit
@@ -156,16 +160,24 @@ class Trainer:
 
     def _generator_train_iteration(self, data):
         """
-        Performs a single training iteration for the generator network. This involves sampling synthetic data, evaluating the generator's performance based on the discriminator's output, and updating the generator's weights to improve the quality of the generated samples.
-        
+        Performs a single training iteration for the generator network.
+
+        This involves sampling synthetic data, evaluating the generator's performance based
+        on the discriminator's output, and updating the generator's weights to improve the
+        quality of the generated samples.
+
         Args:
-            data (torch.Tensor): A batch of real data (not used in this function, but present for consistency with discriminator training).
-        
+            data (torch.Tensor): A batch of real data (not used in this function, but present
+                for consistency with discriminator training).
+
         Returns:
             None. The generator loss is stored in `self.G_loss`.
         
         Why:
-        The generator is trained to produce synthetic data that can fool the discriminator. This function updates the generator's parameters to minimize the discriminator's ability to distinguish between real and generated data, thereby improving the realism and utility of the synthetic data.
+            The generator is trained to produce synthetic data that can fool the discriminator.
+            This function updates the generator's parameters to minimize the discriminator's
+            ability to distinguish between real and generated data, thereby improving the
+            realism and utility of the synthetic data.
         """
         self.G_opt.zero_grad()
 
@@ -186,15 +198,19 @@ class Trainer:
         """
         Computes the gradient penalty for WGAN-GP.
         
-                This method calculates the gradient penalty, a regularization term
-                used in Wasserstein GANs with gradient penalty (WGAN-GP). By penalizing the norm of discriminator gradients with respect to its input, we encourage the discriminator to have a smoother landscape. This enforces the Lipschitz constraint, which is crucial for the Wasserstein distance to be a valid metric and for stable GAN training, ultimately improving the utility of generated samples.
-        
-                Args:
-                    real_data (torch.Tensor): Real data samples.
-                    generated_data (torch.Tensor): Generated data samples.
-        
-                Returns:
-                    torch.Tensor: The gradient penalty.
+        This method calculates the gradient penalty, a regularization term used in Wasserstein
+        GANs with gradient penalty (WGAN-GP). By penalizing the norm of discriminator gradients
+        with respect to its input, we encourage the discriminator to have a smoother landscape.
+        This enforces the Lipschitz constraint, which is crucial for the Wasserstein distance
+        to be a valid metric and for stable GAN training, ultimately improving the utility of
+        generated samples.
+
+        Args:
+            real_data (torch.Tensor): Real data samples.
+            generated_data (torch.Tensor): Generated data samples.
+
+        Returns:
+            torch.Tensor: The gradient penalty.
         """
         batch_size = real_data.size(0)
 
@@ -229,15 +245,20 @@ class Trainer:
 
     def _train_epoch(self, data_loader):
         """
-        Trains the GAN for one epoch using the provided data loader, alternating between critic and generator training steps.
-        
-                The method iterates through the data loader, performing multiple critic updates for each generator update, as determined by `self.critic_iterations`. This ensures the critic is well-trained to differentiate between real and generated samples, which is crucial for the generator to learn to produce realistic synthetic data.
-        
-                Args:
-                    data_loader: The data loader providing real data samples for training.
-        
-                Returns:
-                    None. The method updates the generator and critic networks in place to improve the quality and utility of generated samples.
+        Trains the GAN for one epoch using the provided data loader, alternating between
+        critic and generator training steps.
+
+        The method iterates through the data loader, performing multiple critic updates for
+        each generator update, as determined by `self.critic_iterations`. This ensures the
+        critic is well-trained to differentiate between real and generated samples, which
+        is crucial for the generator to learn to produce realistic synthetic data.
+
+        Args:
+            data_loader: The data loader providing real data samples for training.
+
+        Returns:
+            None. The method updates the generator and critic networks in place to improve
+            the quality and utility of generated samples.
         """
         data_iter = iter(data_loader)
 
@@ -266,15 +287,18 @@ class Trainer:
         """
         Trains the GAN model to generate synthetic data that mimics the distribution of the real data.
         
-                The training process involves iteratively updating the generator and discriminator networks to improve the quality and realism of the generated samples.  The progress is monitored and visualized through loss tracking and sample plotting.
-        
-                Args:
-                    data_loader: The data loader providing batches of real data for training.
-                    epochs: The number of training epochs to perform.
-                    plot_freq: The frequency (in epochs) at which to generate and plot samples to visualize training progress.
-        
-                Returns:
-                    None
+        The training process involves iteratively updating the generator and discriminator
+        networks to improve the quality and realism of the generated samples. The progress
+        is monitored and visualized through loss tracking and sample plotting.
+
+        Args:
+            data_loader: The data loader providing batches of real data for training.
+            epochs: The number of training epochs to perform.
+            plot_freq: The frequency (in epochs) at which to generate and plot samples to
+                visualize training progress.
+
+        Returns:
+            None
         """
         pca = False
         pbar = tqdm.tqdm(range(epochs), total=epochs, disable=self.disable)
@@ -321,8 +345,9 @@ class Trainer:
         """
         Generates synthetic data samples using the generator network to augment the original dataset.
         
-        The generated samples aim to resemble the real data distribution, enhancing the dataset's utility for downstream tasks.
-        
+        The generated samples aim to resemble the real data distribution, enhancing the dataset's
+        utility for downstream tasks.
+
         Args:
             num_samples: The number of synthetic samples to generate.
         
@@ -336,60 +361,39 @@ class Trainer:
 
 class TrainerModified(Trainer):
     """
-    A modified trainer class for training a model with specific feature selection techniques.
-    
-        This class extends a base trainer to incorporate Marginal Feature Significance (MFS)
-        into the training process, allowing for targeted feature selection and manipulation.
-    
-        Class Methods:
-        - __init__
-        - sample_from_tensor
-        - calculate_mfs_torch
-        - total_grad_norm
-        - compute_loss_on_variates_wasserstein
-        - reshape_mfs_from_variates
-        - wasserstein_distance_2d
-        - wasserstein_loss_mfs
-        - _generator_train_iteration
-        - plot_grad_flow
-        - plot_qq_plot
-        - train
-    
-        Class Fields:
-            mfs_lambda (float): Lambda value for MFS.
-            subset_mfs (object): Subset of MFS.
-            target_mfs (dict): Target MFS. If not provided, defaults to {"other_mfs": 0}.
-            mfs_manager (MFEToTorch): An instance of the MFEToTorch class, used for managing MFS.
-            wasserstein_dist_func (WassersteinDistance): An instance of the WassersteinDistance class, used for calculating Wasserstein distance.
-            sample_number (int): Number of samples to use during training.
+    A modified trainer class for training GANs with Meta-Feature Statistics (MFS) preservation.
+
+    This class extends the base trainer to incorporate Meta-Feature Statistics (MFS)
+    into the training process, allowing for targeted preservation of statistical properties
+    and enhanced synthetic data quality.
     """
 
-    def __init__(self, mfs_lambda, subset_mfs, target_mfs, sample_number,
-                 **kwargs):
+    def __init__(self, mfs_lambda, subset_mfs, target_mfs, sample_number, **kwargs):
         """
-        Initializes the TrainerModified class.
-        
-                This class configures the training process for the GAN, focusing on feature selection to enhance the utility of generated synthetic data. It sets up the parameters that guide the feature selection process, ensuring the generated data retains key characteristics of the real data.
-        
-                Args:
-                    mfs_lambda (float): Lambda value for MFS, controlling the strength of the feature selection regularization.
-                    subset_mfs (object): Subset of MFS, defining the features to be considered for selection.
-                    target_mfs (dict): Target MFS, specifying the desired distribution of meta-features in the generated data. Defaults to {"other_mfs": 0} if not provided.
-                    sample_number (int): Number of samples to use during training, influencing the stability and generalization of the GAN.
-                    **kwargs: Additional keyword arguments, allowing for flexible configuration of the training process.
-        
-                Returns:
-                    None
-        
-                Class Fields:
-                    mfs_lambda (float): Lambda value for MFS.
-                    subset_mfs (object): Subset of MFS.
-                    target_mfs (dict): Target MFS. If not provided, defaults to {"other_mfs": 0}.
-                    mfs_manager (MFEToTorch): An instance of the MFEToTorch class, used for managing MFS.
-                    wasserstein_dist_func (WassersteinDistance): An instance of the WassersteinDistance class, used for calculating Wasserstein distance.
-                    sample_number (int): Number of samples to use during training.
-        
-                The method initializes the training process by setting up the meta-feature selection (MFS) parameters. This setup is crucial for guiding the GAN to generate synthetic data that not only resembles the real data but also maintains its utility. The target_mfs parameter allows specifying the desired distribution of meta-features in the generated data, ensuring that the synthetic data is suitable for downstream tasks.
+        Initializes the TrainerModified class with Meta-Feature Statistics preservation.
+
+        This class configures the training process for the GAN, focusing on preserving
+        meta-feature statistics to enhance the utility of generated synthetic data. It sets up
+        the parameters that guide the MFS preservation process, ensuring the generated data
+        retains key statistical characteristics of the real data.
+
+        Args:
+            mfs_lambda (float or list): Lambda value(s) for MFS loss weighting, controlling
+                the strength of the meta-feature preservation regularization.
+            subset_mfs (list): Subset of meta-features to preserve, defining which statistical
+                properties to focus on during training.
+            target_mfs (dict): Target MFS distributions, specifying the desired meta-feature
+                distributions in the generated data. Defaults to {"other_mfs": 0} if not provided.
+            sample_number (int): Number of variates to use during MFS calculation, influencing
+                the stability and accuracy of meta-feature estimation.
+            **kwargs: Additional keyword arguments passed to the parent Trainer class.
+
+        The method initializes the training process by setting up the meta-feature statistics (MFS)
+        parameters. This setup is crucial for guiding the GAN to generate synthetic data that not
+        only resembles the real data visually but also maintains its statistical utility. The
+        target_mfs parameter allows specifying the desired distribution of meta-features in the
+        generated data, ensuring that the synthetic data preserves important statistical properties
+        for downstream tasks.
         """
         super(TrainerModified, self).__init__(**kwargs)
         self.mfs_lambda = mfs_lambda
@@ -411,14 +415,19 @@ class TrainerModified(Trainer):
     @staticmethod
     def sample_from_tensor(tensor, n_samples):
         """
-        Samples a subset of data points from a given tensor. This is useful for creating smaller, representative datasets for tasks such as evaluating model performance on a subset of the data or for visualization purposes.
-        
-                Args:
-                    tensor (torch.Tensor): The input tensor from which to sample.
-                    n_samples (int): The number of data points to sample from the tensor.
-        
-                Returns:
-                    torch.Tensor: A new tensor containing the sampled data points. The sampled data maintains the original data's structure while reducing its size, which is important for efficient analysis and evaluation.
+        Samples a subset of data points from a given tensor.
+
+        This is useful for creating smaller, representative datasets for tasks such as
+        evaluating model performance on a subset of the data or for visualization purposes.
+
+        Args:
+            tensor (torch.Tensor): The input tensor from which to sample.
+            n_samples (int): The number of data points to sample from the tensor.
+
+        Returns:
+            torch.Tensor: A new tensor containing the sampled data points.
+                The sampled data maintains the original data's structure while reducing its size,
+                which is important for efficient analysis and evaluation.
         """
         indices = torch.randperm(tensor.size(0))
         indices_trunc = indices[:n_samples]
@@ -427,16 +436,24 @@ class TrainerModified(Trainer):
 
     def calculate_mfs_torch(self, X: torch.Tensor, y: torch.Tensor = None) -> torch.Tensor:
         """
-        Calculates the marginal feature significance (MFS) to quantify feature importance for downstream regression tasks using GAN-generated data.
-        
-                This method leverages the MFS manager to assess the contribution of each feature in the input tensor X to the target variable, optionally conditioned on a target tensor y. This helps in understanding which features are most relevant for preserving data utility in synthetic samples.
-        
-                Args:
-                    X: The input tensor representing the synthetic data features.
-                    y: The target tensor representing the corresponding target variable (optional).
-        
-                Returns:
-                    torch.Tensor: The calculated MFS values, moved to the specified device. These values indicate the relative importance of each feature in X for predicting y, aiding in the evaluation and refinement of the GAN's data generation process.
+        Calculates the meta-feature statistics (MFS) to quantify statistical properties for
+        preserving data utility in GAN-generated synthetic data.
+
+        This method leverages the MFS manager to assess various statistical properties of the
+        input tensor X, optionally conditioned on a target tensor y. This helps in understanding
+        which statistical characteristics are most important for preserving data utility in
+        synthetic samples.
+
+        Args:
+            X (torch.Tensor): The input tensor representing the synthetic data features.
+            y (torch.Tensor, optional): The target tensor representing the corresponding
+                target variable. Defaults to None.
+
+        Returns:
+            torch.Tensor: The calculated MFS values, moved to the specified device.
+                These values represent various statistical properties of the data (correlation,
+                covariance, eigenvalues, etc.), which are used to guide the generator's
+                learning process and ensure statistical fidelity.
         """
         return self.mfs_manager.get_mfs(X, y, subset=self.subset_mfs).to(self.device)
 
@@ -445,18 +462,18 @@ class TrainerModified(Trainer):
         """
         Computes the total gradient norm of a model's parameters.
         
-                Calculates the L2 norm of the gradients across all parameters in the model.
-                This is useful for monitoring training and detecting potential issues like
-                exploding gradients, ensuring stable training during synthetic data generation.
-                By monitoring the gradient norm, we can ensure the generator and discriminator
-                are learning effectively and preventing mode collapse, which is crucial for
-                producing high-quality synthetic data.
-        
-                Args:
-                    model: The model whose gradients are to be analyzed.
-        
-                Returns:
-                    float: The total gradient norm.
+        Calculates the L2 norm of the gradients across all parameters in the model.
+        This is useful for monitoring training and detecting potential issues like
+        exploding gradients, ensuring stable training during synthetic data generation.
+        By monitoring the gradient norm, we can ensure the generator and discriminator
+        are learning effectively and preventing mode collapse, which is crucial for
+        producing high-quality synthetic data.
+
+        Args:
+            model: The model whose gradients are to be analyzed.
+
+        Returns:
+            float: The total gradient norm.
         """
         total_norm = 0
         for p in model.parameters():
@@ -469,18 +486,19 @@ class TrainerModified(Trainer):
         """
         Computes the Wasserstein loss to align generated and real data distributions.
         
-                This method calculates the Wasserstein distance between the target marginal feature statistics (MFS)
-                and the MFS generated from the fake data distribution. It first calculates the MFS for each variate
-                in the fake distribution, reshapes them, and then computes the Wasserstein distance using the
-                specified distance function. This loss encourages the generator to produce data with similar statistical properties to the real data,
-                enhancing the utility of the synthetic data for downstream tasks.
-        
-                Args:
-                    fake_distribution: A list of tensors representing the generated data distribution. Each tensor
-                        represents a variate.
-        
-                Returns:
-                    torch.Tensor: The Wasserstein distance between the target MFS and the generated MFS.
+        This method calculates the Wasserstein distance between the target meta-feature
+        statistics (MFS) and the MFS generated from the fake data distribution. It first
+        calculates the MFS for each variate in the fake distribution, reshapes them, and
+        then computes the Wasserstein distance using the specified distance function. This
+        loss encourages the generator to produce data with similar statistical properties
+        to the real data, enhancing the utility of the synthetic data for downstream tasks.
+
+        Args:
+            fake_distribution: A list of tensors representing the generated data distribution.
+                Each tensor represents a variate.
+
+        Returns:
+            torch.Tensor: The Wasserstein distance between the target MFS and the generated MFS.
         """
         fake_mfs = [self.calculate_mfs_torch(X) for X in fake_distribution]
         fake_mfs = self.reshape_mfs_from_variates(fake_mfs)
@@ -492,21 +510,21 @@ class TrainerModified(Trainer):
     @staticmethod
     def reshape_mfs_from_variates(mfs_from_variates: list):
         """
-        Reshapes a list of membership functions (MFs) from variates into a tensor to prepare data for comparison between real and synthetic datasets.
-        
-                The input list `mfs_from_variates` contains MFs, which are stacked
-                and then transposed to create the reshaped tensor. This reshaping
-                facilitates the calculation of metrics and topological analysis
-                needed to evaluate the quality and utility of the generated synthetic data.
-        
-                Args:
-                    mfs_from_variates: A list of membership functions from variates.
-        
-                Returns:
-                    torch.Tensor: A reshaped tensor where the first dimension corresponds
-                        to the variates and the second dimension corresponds to the MFs.
-                        This format is required for subsequent analysis and comparison
-                        of real and synthetic data characteristics.
+        Reshapes a list of meta-feature statistics from variates into a tensor for comparison.
+
+        The input list `mfs_from_variates` contains MFS values, which are stacked
+        and then transposed to create the reshaped tensor. This reshaping
+        facilitates the calculation of metrics and topological analysis
+        needed to evaluate the quality and utility of the generated synthetic data.
+
+        Args:
+            mfs_from_variates: A list of meta-feature statistics from variates.
+
+        Returns:
+            torch.Tensor: A reshaped tensor where the first dimension corresponds
+                to the variates and the second dimension corresponds to the MFS values.
+                This format is required for subsequent analysis and comparison
+                of real and synthetic data characteristics.
         """
         stacked = torch.stack(mfs_from_variates)
         reshaped = stacked.transpose(0, 1)
@@ -516,16 +534,18 @@ class TrainerModified(Trainer):
         """
         Compute the Wasserstein distance between two 2D point clouds.
         
-                This method calculates the Earth Mover's Distance (EMD), also known as the
-                Wasserstein distance, between two sets of 2D points. It assumes that both
-                point clouds have equal weights assigned to each point. This distance is used to evaluate how well the generated data distribution matches the real data distribution, ensuring the synthetic data retains statistical similarity.
-        
-                Args:
-                    x1 (torch.Tensor): The first point cloud, represented as a batch of 2D points.
-                    x2 (torch.Tensor): The second point cloud, represented as a batch of 2D points.
-        
-                Returns:
-                    float: The Wasserstein distance between the two point clouds.
+        This method calculates the Earth Mover's Distance (EMD), also known as the
+        Wasserstein distance, between two sets of 2D points. It assumes that both
+        point clouds have equal weights assigned to each point. This distance is used
+        to evaluate how well the generated data distribution matches the real data
+        distribution, ensuring the synthetic data retains statistical similarity.
+
+        Args:
+            x1 (torch.Tensor): The first point cloud, represented as a batch of 2D points.
+            x2 (torch.Tensor): The second point cloud, represented as a batch of 2D points.
+
+        Returns:
+            float: The Wasserstein distance between the two point clouds.
         """
         batch_size = x1.shape[0]
 
@@ -538,26 +558,26 @@ class TrainerModified(Trainer):
 
     def wasserstein_loss_mfs(self, mfs1, mfs2, average=True):
         """
-        Calculates the Wasserstein loss between two sets of multi-feature statistics (MFS).
-        
-                This method quantifies the statistical similarity between the real and synthetic
-                data distributions by computing the Wasserstein distance between corresponding
-                feature pairs in the input MFS sets. This loss is used to train the generator
-                to produce synthetic data that closely matches the statistical properties of
-                the real data.
-        
-                Args:
-                    mfs1 (torch.Tensor): The first set of multi-feature statistics, representing
-                        the real data distribution.
-                    mfs2 (torch.Tensor): The second set of multi-feature statistics, representing
-                        the synthetic data distribution.
-                    average (bool, optional): A boolean indicating whether to return the average
-                        loss (True) or a tensor of individual losses (False). Defaults to True.
-        
-                Returns:
-                    torch.Tensor or float: If `average` is True, returns the average
-                    Wasserstein loss as a float. Otherwise, returns a tensor containing the
-                    individual Wasserstein distances for each feature.
+        Calculates the Wasserstein loss between two sets of meta-feature statistics (MFS).
+
+        This method quantifies the statistical similarity between the real and synthetic
+        data distributions by computing the Wasserstein distance between corresponding
+        feature pairs in the input MFS sets. This loss is used to train the generator
+        to produce synthetic data that closely matches the statistical properties of
+        the real data.
+
+        Args:
+            mfs1 (torch.Tensor): The first set of meta-feature statistics, representing
+                the real data distribution.
+            mfs2 (torch.Tensor): The second set of meta-feature statistics, representing
+                the synthetic data distribution.
+            average (bool, optional): A boolean indicating whether to return the average
+                loss (True) or a tensor of individual losses (False). Defaults to True.
+
+        Returns:
+            torch.Tensor or float: If `average` is True, returns the average
+                Wasserstein loss as a float. Otherwise, returns a tensor containing the
+                individual Wasserstein distances for each feature.
         """
         # total = 0
         n_features = mfs1.shape[0]
@@ -578,13 +598,18 @@ class TrainerModified(Trainer):
 
     def _generator_train_iteration(self, data):
         """
-        Generates synthetic data in one training step and optimizes the generator network to produce data that is indistinguishable from real data based on the discriminator's feedback and the matching of membership functions.
-        
-                Args:
-                    data (torch.Tensor): A batch of real data used to determine batch size.
-        
-                Returns:
-                    None. The generator's parameters are updated to minimize the combined adversarial and membership function loss. The losses are also recorded.
+        Generates synthetic data in one training step and optimizes the generator network.
+
+        This method produces data that is indistinguishable from real data based on the
+        discriminator's feedback and the matching of meta-feature statistics. The generator
+        is optimized to minimize both adversarial loss and MFS preservation loss.
+
+        Args:
+            data (torch.Tensor): A batch of real data used to determine batch size.
+
+        Returns:
+            None. The generator's parameters are updated to minimize the combined adversarial
+                and meta-feature statistics loss. The losses are also recorded.
         """
         self.G_opt.zero_grad()
 
@@ -619,8 +644,9 @@ class TrainerModified(Trainer):
 
         g_loss = - d_generated.mean() + loss_mfs
 
-        if not os.path.isfile("mod_computation_graph_G_loss.png"):
-            make_dot(g_loss, show_attrs=True).render("mod_computation_graph_G_loss", format="png")
+        if PLOT_GRAPH:
+            if not os.path.isfile("mod_computation_graph_G_loss.png"):
+                make_dot(g_loss, show_attrs=True).render("mod_computation_graph_G_loss", format="png")
 
         g_loss.backward()
         self.G_opt.step()
@@ -634,18 +660,18 @@ class TrainerModified(Trainer):
         """
         Plots the gradient flow through the layers of a neural network to assess training dynamics.
         
-                This method calculates and visualizes the average gradient magnitude
-                for each layer of the network, excluding bias parameters. By observing the gradient flow,
-                one can identify layers that might be hindering the learning process due to vanishing or exploding gradients,
-                ensuring stable and effective training by maintaining data utility.
-        
-                Args:
-                    named_parameters: An iterator of tuples containing layer names and
-                        parameter tensors.
-                    title: The title of the plot. Defaults to "Gradient flow".
-        
-                Returns:
-                    matplotlib.figure.Figure: A matplotlib figure containing the gradient flow plot.
+        This method calculates and visualizes the average gradient magnitude
+        for each layer of the network, excluding bias parameters. By observing the gradient flow,
+        one can identify layers that might be hindering the learning process due to vanishing
+        or exploding gradients, ensuring stable and effective training by maintaining data utility.
+
+        Args:
+            named_parameters: An iterator of tuples containing layer names and
+                parameter tensors.
+            title: The title of the plot. Defaults to "Gradient flow".
+
+        Returns:
+            matplotlib.figure.Figure: A matplotlib figure containing the gradient flow plot.
         """
         ave_grads = []
         layers = []
@@ -669,16 +695,18 @@ class TrainerModified(Trainer):
 
     def plot_qq_plot(self, mfs_batch):
         """
-        Plots a quantile-quantile (QQ) plot to compare the distribution of generated MFS with the target distribution.
-                
-                This method generates a QQ plot to visually assess how well the generated MFS from a batch matches the distribution of the target MFS. It also plots a histogram of the target MFS to visualize its distribution.
-                The QQ plot helps determine if the GAN is effectively learning to reproduce the statistical properties of the real data.
-                
-                Args:
-                    mfs_batch: A batch of generated MFS to compare against the target distribution.
-                
-                Returns:
-                    The matplotlib figure containing the QQ plot.
+        Plots a quantile-quantile (QQ) plot to compare MFS distributions.
+
+        This method generates a QQ plot to visually assess how well the generated MFS from
+        a batch matches the distribution of the target MFS. It also plots a histogram of the
+        target MFS to visualize its distribution. The QQ plot helps determine if the GAN is
+        effectively learning to reproduce the statistical properties of the real data.
+
+        Args:
+            mfs_batch: A batch of generated MFS to compare against the target distribution.
+
+        Returns:
+            matplotlib.figure.Figure: The matplotlib figure containing the QQ plot.
         """
         detached_target = self.target_mfs["other_mfs"].cpu().detach().numpy().reshape(-1, 2)
         mfs_batch_ = mfs_batch.reshape(-1, 2)
@@ -693,18 +721,20 @@ class TrainerModified(Trainer):
         """
         Trains the GAN model to generate synthetic data that mimics the statistical properties of the real data.
         
-                The training process involves updating the generator and discriminator networks iteratively
-                to improve the quality and utility of the generated samples. The method also tracks
-                various metrics and visualizations to monitor the training progress and evaluate the
-                performance of the GAN.
-        
-                Args:
-                  data_loader: The data loader providing batches of real data for training.
-                  epochs: The number of training epochs to perform.
-                  plot_freq: The frequency (in epochs) at which to generate and track plots for monitoring training progress.
-        
-                Returns:
-                  None. The method trains the GAN model in place, updating the generator and discriminator networks.
+        The training process involves updating the generator and discriminator networks iteratively
+        to improve the quality and utility of the generated samples. The method also tracks
+        various metrics and visualizations to monitor the training progress and evaluate the
+        performance of the GAN.
+
+        Args:
+            data_loader: The data loader providing batches of real data for training.
+            epochs: The number of training epochs to perform.
+            plot_freq: The frequency (in epochs) at which to generate and track plots for
+                monitoring training progress.
+
+        Returns:
+            None. The method trains the GAN model in place, updating the generator and
+                discriminator networks.
         """
         pca = False
         self.mfs_manager.change_device(self.device)
@@ -719,10 +749,6 @@ class TrainerModified(Trainer):
             real_data_sample = next(iter(data_loader))
             # samples = [self.sample_generator(self.batch_size) for _ in range(self.sample_number)]
             samples = self.sample_generator(self.batch_size).cpu().detach().numpy()
-            # for i, mfs_name in enumerate(("cor", "cov", "eigenvalues", "iq_range", "kurtosis", "skewness",
-            #                               "mad", "max", "min", "mean", "median", "range", "sd", "var")):
-            #     self.aim_track.track(self.diff[i, 0], name=f"{mfs_name}_1", epoch=epoch)
-            #     self.aim_track.track(self.diff[i, 1], name=f"{mfs_name}_2", epoch=epoch)
 
             self.aim_track.track(self.G_loss.item(), name='loss G', epoch=epoch)
             self.aim_track.track(self.D_loss.item(), name='loss D', epoch=epoch)

@@ -7,7 +7,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde
 import torch
-import tqdm
 from xgboost import XGBRegressor
 
 from sklearn.metrics import r2_score, root_mean_squared_error, mean_absolute_percentage_error
