@@ -458,7 +458,7 @@ class TrainerModified(Trainer):
         """
         indices = torch.randperm(tensor.size(0))
         indices_trunc = indices[:n_samples]
-        sampled_tensor = tensor[indices_trunc[:n_samples]]
+        sampled_tensor = tensor[indices_trunc]
         return sampled_tensor
 
     def calculate_mfs_torch(
