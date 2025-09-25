@@ -29,7 +29,7 @@ def sample_from_Xy_tensors(X: torch.Tensor, n_samples):
     """
     indices = torch.randperm(X.size(0))
     indices_trunc = indices[:n_samples]
-    X_sampled_tensor = X[indices_trunc[:n_samples]]
+    X_sampled_tensor = X[indices_trunc]
     # y_sampled_tensor = y[indices_trunc[:n_samples]]
     # return X_sampled_tensor, y_sampled_tensor
     return X_sampled_tensor
