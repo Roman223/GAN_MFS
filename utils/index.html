@@ -1,0 +1,2448 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="WGAN-GP with Meta-Feature Statistics for Synthetic Tabular Data Generation">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../wgan_gp/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.20">
+    
+    
+      
+        <title>Utils - GAN_MFS Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.e53b48f4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-blue" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#utils" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GAN_MFS Documentation" class="md-header__button md-logo" aria-label="GAN_MFS Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GAN_MFS Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Utils
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-blue" data-md-color-accent="blue"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Utils
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../wgan_gp/" class="md-tabs__link">
+          
+  
+  
+  WGAN-GP
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GAN_MFS Documentation" class="md-nav__button md-logo" aria-label="GAN_MFS Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GAN_MFS Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Utils
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Utils
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#wgan_gp.utils" class="md-nav__link">
+    <span class="md-ellipsis">
+      utils
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="utils">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.calc_metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      calc_metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.calc_utility_metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      calc_utility_metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.compute_regression_performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      compute_regression_performance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.convert_result" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert_result
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.correlation_matrix_distance" class="md-nav__link">
+    <span class="md-ellipsis">
+      correlation_matrix_distance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.create_joint" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_joint
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.create_variates" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_variates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.estimate_marginal_js" class="md-nav__link">
+    <span class="md-ellipsis">
+      estimate_marginal_js
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.get_real_data" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_real_data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.random_sample" class="md-nav__link">
+    <span class="md-ellipsis">
+      random_sample
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.remove_anomalies_iqr" class="md-nav__link">
+    <span class="md-ellipsis">
+      remove_anomalies_iqr
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.remove_inf" class="md-nav__link">
+    <span class="md-ellipsis">
+      remove_inf
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.sample_from_Xy_tensors" class="md-nav__link">
+    <span class="md-ellipsis">
+      sample_from_Xy_tensors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.topological_distance" class="md-nav__link">
+    <span class="md-ellipsis">
+      topological_distance
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    WGAN-GP
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            WGAN-GP
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wgan_gp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wgan_gp/models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wgan_gp/training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Training
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wgan_gp/pymfe_to_torch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PyMFE to Torch
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#wgan_gp.utils" class="md-nav__link">
+    <span class="md-ellipsis">
+      utils
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="utils">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.calc_metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      calc_metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.calc_utility_metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      calc_utility_metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.compute_regression_performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      compute_regression_performance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.convert_result" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert_result
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.correlation_matrix_distance" class="md-nav__link">
+    <span class="md-ellipsis">
+      correlation_matrix_distance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.create_joint" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_joint
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.create_variates" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_variates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.estimate_marginal_js" class="md-nav__link">
+    <span class="md-ellipsis">
+      estimate_marginal_js
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.get_real_data" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_real_data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.random_sample" class="md-nav__link">
+    <span class="md-ellipsis">
+      random_sample
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.remove_anomalies_iqr" class="md-nav__link">
+    <span class="md-ellipsis">
+      remove_anomalies_iqr
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.remove_inf" class="md-nav__link">
+    <span class="md-ellipsis">
+      remove_inf
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.sample_from_Xy_tensors" class="md-nav__link">
+    <span class="md-ellipsis">
+      sample_from_Xy_tensors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wgan_gp.utils.topological_distance" class="md-nav__link">
+    <span class="md-ellipsis">
+      topological_distance
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="utils">Utils<a class="headerlink" href="#utils" title="Permanent link">&para;</a></h1>
+<p>This module contains utility functions for data processing, metric calculation, and evaluation of synthetic data generation.</p>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="wgan_gp.utils" class="doc doc-heading">
+            <code>wgan_gp.utils</code>
+
+
+<a href="#wgan_gp.utils" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.calc_metrics" class="doc doc-heading">
+            <code class=" language-python"><span class="n">calc_metrics</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">test</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.calc_metrics" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Calculates the cosine distance between the correlation matrices of a synthetic and a test dataset. This helps to quantify how well the synthetic data preserves the relationships between features present in the original data. Preserving these relationships is crucial for maintaining the utility of the synthetic data for downstream tasks.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">Args</span><span class="o">:</span>
+<span class="w">    </span><span class="n">synth</span><span class="o">:</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">synthetic</span><span class="w"> </span><span class="n">dataset</span><span class="o">.</span>
+<span class="w">    </span><span class="n">test</span><span class="o">:</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">test</span><span class="w"> </span><span class="n">dataset</span><span class="w"> </span><span class="o">(</span><span class="n">typically</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">real</span><span class="w"> </span><span class="n">data</span><span class="o">).</span>
+
+<span class="n">Returns</span><span class="o">:</span>
+<span class="w">    </span><span class="n">dict</span><span class="o">:</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">dictionary</span><span class="w"> </span><span class="n">containing</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">cosine</span><span class="w"> </span><span class="n">distance</span><span class="w"> </span><span class="n">between</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">correlation</span>
+<span class="w">        </span><span class="n">matrices</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">synthetic</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">test</span><span class="w"> </span><span class="n">datasets</span><span class="o">,</span><span class="w"> </span><span class="n">keyed</span><span class="w"> </span><span class="n">by</span>
+<span class="w">        </span><span class="s2">&quot;cosine_dist_corr_matrix&quot;</span><span class="o">.</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">lower</span><span class="w"> </span><span class="n">distance</span><span class="w"> </span><span class="n">indicates</span><span class="w"> </span><span class="n">better</span><span class="w"> </span><span class="n">preservation</span>
+<span class="w">        </span><span class="n">of</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="n">relationships</span><span class="o">.</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calc_metrics</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">test</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the cosine distance between the correlation matrices of a synthetic and a test dataset. This helps to quantify how well the synthetic data preserves the relationships between features present in the original data. Preserving these relationships is crucial for maintaining the utility of the synthetic data for downstream tasks.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            synth: The synthetic dataset.</span>
+<span class="sd">            test: The test dataset (typically the real data).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: A dictionary containing the cosine distance between the correlation</span>
+<span class="sd">                matrices of the synthetic and test datasets, keyed by</span>
+<span class="sd">                &quot;cosine_dist_corr_matrix&quot;. A lower distance indicates better preservation</span>
+<span class="sd">                of feature relationships.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;cosine_dist_corr_matrix&quot;</span><span class="p">:</span> <span class="n">correlation_matrix_distance</span><span class="p">(</span>
+            <span class="n">synth</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;cosine&quot;</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.calc_utility_metrics" class="doc doc-heading">
+            <code class=" language-python"><span class="n">calc_utility_metrics</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.calc_utility_metrics" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Calculates utility metrics to assess how well synthetic data preserves the characteristics of real data for regression tasks.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">This</span><span class="w"> </span><span class="n">function</span><span class="w"> </span><span class="n">trains</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">regression</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">both</span><span class="w"> </span><span class="n">real</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">synthetic</span><span class="w"> </span><span class="n">datasets</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">then</span><span class="w"> </span><span class="n">evaluates</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">performance</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">both</span><span class="w"> </span><span class="n">models</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">common</span><span class="w"> </span><span class="n">test</span><span class="w"> </span><span class="n">set</span><span class="o">.</span>
+<span class="n">The</span><span class="w"> </span><span class="n">comparison</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">these</span><span class="w"> </span><span class="n">performances</span><span class="w"> </span><span class="n">indicates</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">utility</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">synthetic</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">maintaining</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">performance</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">machine</span><span class="w"> </span><span class="n">learning</span><span class="w"> </span><span class="n">models</span><span class="o">.</span>
+
+<span class="n">Args</span><span class="p">:</span>
+<span class="w">    </span><span class="n">synth</span><span class="w"> </span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">synthetic</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">where</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">last</span><span class="w"> </span><span class="n">column</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">assumed</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="n">variable</span><span class="o">.</span>
+<span class="w">    </span><span class="n">x_train</span><span class="w"> </span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">training</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">real</span><span class="w"> </span><span class="n">dataset</span><span class="o">.</span>
+<span class="w">    </span><span class="n">x_test</span><span class="w"> </span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">test</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">real</span><span class="w"> </span><span class="n">dataset</span><span class="o">.</span>
+<span class="w">    </span><span class="n">y_test</span><span class="w"> </span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">test</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">labels</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">real</span><span class="w"> </span><span class="n">dataset</span><span class="o">.</span>
+<span class="w">    </span><span class="n">y_train</span><span class="w"> </span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">training</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">labels</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">real</span><span class="w"> </span><span class="n">dataset</span><span class="o">.</span>
+
+<span class="n">Returns</span><span class="p">:</span>
+<span class="w">    </span><span class="n">tuple</span><span class="p">[</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="n">dict</span><span class="p">]:</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">tuple</span><span class="w"> </span><span class="n">containing</span><span class="w"> </span><span class="n">two</span><span class="w"> </span><span class="n">dictionaries</span><span class="o">.</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">first</span><span class="w"> </span><span class="n">dictionary</span><span class="w"> </span><span class="n">contains</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">regression</span><span class="w"> </span><span class="n">performance</span><span class="w"> </span><span class="n">metrics</span><span class="w"> </span><span class="n">achieved</span><span class="w"> </span><span class="n">using</span><span class="w"> </span><span class="n">real</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
+<span class="w">    </span><span class="ow">and</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">second</span><span class="w"> </span><span class="n">dictionary</span><span class="w"> </span><span class="n">contains</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">regression</span><span class="w"> </span><span class="n">performance</span><span class="w"> </span><span class="n">metrics</span><span class="w"> </span><span class="n">achieved</span><span class="w"> </span><span class="n">using</span><span class="w"> </span><span class="n">synthetic</span><span class="w"> </span><span class="n">data</span><span class="o">.</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calc_utility_metrics</span><span class="p">(</span>
+    <span class="n">synth</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">x_train</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">x_test</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">y_test</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">y_train</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates utility metrics to assess how well synthetic data preserves the characteristics of real data for regression tasks.</span>
+
+<span class="sd">        This function trains a regression model on both real and synthetic datasets and then evaluates the performance of both models on a common test set.</span>
+<span class="sd">        The comparison of these performances indicates the utility of the synthetic data for maintaining the performance of machine learning models.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            synth (torch.Tensor | np.ndarray): The synthetic data, where the last column is assumed to be the target variable.</span>
+<span class="sd">            x_train (torch.Tensor | np.ndarray): The training data features from the real dataset.</span>
+<span class="sd">            x_test (torch.Tensor | np.ndarray): The test data features from the real dataset.</span>
+<span class="sd">            y_test (torch.Tensor | np.ndarray): The test data labels from the real dataset.</span>
+<span class="sd">            y_train (torch.Tensor | np.ndarray): The training data labels from the real dataset.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[dict, dict]: A tuple containing two dictionaries. The first dictionary contains the regression performance metrics achieved using real data,</span>
+<span class="sd">            and the second dictionary contains the regression performance metrics achieved using synthetic data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">synth</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">synth</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">x_train</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x_train</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x_test</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">x_test</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">y_test</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">y_test</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">y_train</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span>
+
+    <span class="n">metrics_real</span> <span class="o">=</span> <span class="n">compute_regression_performance</span><span class="p">(</span>
+        <span class="n">x_train</span><span class="p">,</span>
+        <span class="n">y_train</span><span class="p">,</span>
+        <span class="n">x_test</span><span class="p">,</span>
+        <span class="n">y_test</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">synth_X</span><span class="p">,</span> <span class="n">synth_y</span> <span class="o">=</span> <span class="n">synth</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">synth</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">metrics_synth</span> <span class="o">=</span> <span class="n">compute_regression_performance</span><span class="p">(</span>
+        <span class="n">synth_X</span><span class="p">,</span>
+        <span class="n">synth_y</span><span class="p">,</span>
+        <span class="n">x_test</span><span class="p">,</span>
+        <span class="n">y_test</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">convert_result</span><span class="p">(</span><span class="n">metrics_real</span><span class="p">),</span> <span class="n">convert_result</span><span class="p">(</span><span class="n">metrics_synth</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.compute_regression_performance" class="doc doc-heading">
+            <code class=" language-python"><span class="n">compute_regression_performance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.compute_regression_performance" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Computes and compares the performance of regression models on real data.</p>
+<p>This method trains a set of regressors on the provided training data and evaluates their performance on a separate test set. It calculates Mean Absolute Percentage Error (MAPE), Root Mean Squared Error (RMSE), and R-squared (R2) to quantify the accuracy and goodness-of-fit of each regressor. This is done to establish a baseline performance of the models on the real data, which can then be compared with the performance of models trained on synthetic data.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Training data features.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>y</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Training data target.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>X_test</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Test data features.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>y_test</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Test data target.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>dict</code></td>            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A dictionary containing the performance metrics for each regressor.
+The keys of the dictionary are the names of the regressors, and the
+values are dictionaries containing the MAPE, RMSE, and R2 scores.
+For example:
+{'XGBRegressor': {'mape': 0.123, 'rmse': 4.56, 'r2': 0.789}}</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_regression_performance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes and compares the performance of regression models on real data.</span>
+
+<span class="sd">    This method trains a set of regressors on the provided training data and evaluates their performance on a separate test set. It calculates Mean Absolute Percentage Error (MAPE), Root Mean Squared Error (RMSE), and R-squared (R2) to quantify the accuracy and goodness-of-fit of each regressor. This is done to establish a baseline performance of the models on the real data, which can then be compared with the performance of models trained on synthetic data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X: Training data features.</span>
+<span class="sd">        y: Training data target.</span>
+<span class="sd">        X_test: Test data features.</span>
+<span class="sd">        y_test: Test data target.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A dictionary containing the performance metrics for each regressor.</span>
+<span class="sd">            The keys of the dictionary are the names of the regressors, and the</span>
+<span class="sd">            values are dictionaries containing the MAPE, RMSE, and R2 scores.</span>
+<span class="sd">            For example:</span>
+<span class="sd">            {&#39;XGBRegressor&#39;: {&#39;mape&#39;: 0.123, &#39;rmse&#39;: 4.56, &#39;r2&#39;: 0.789}}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">regressors</span> <span class="o">=</span> <span class="p">[</span><span class="n">XGBRegressor</span><span class="p">()]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">regressors</span><span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">regressor</span> <span class="ow">in</span> <span class="n">regressors</span><span class="p">:</span>
+        <span class="n">regressor</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="n">regressor</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+        <span class="n">mape</span> <span class="o">=</span> <span class="n">mean_absolute_percentage_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
+        <span class="n">rmse</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
+        <span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
+        <span class="n">local_result</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;mape&quot;</span><span class="p">:</span> <span class="n">mape</span><span class="p">,</span>
+            <span class="s2">&quot;rmse&quot;</span><span class="p">:</span> <span class="n">rmse</span><span class="p">,</span>
+            <span class="s2">&quot;r2&quot;</span><span class="p">:</span> <span class="n">r2</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">regressor</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">]</span> <span class="o">=</span> <span class="n">local_result</span>
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.convert_result" class="doc doc-heading">
+            <code class=" language-python"><span class="n">convert_result</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.convert_result" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Converts the model results into a flattened dictionary format suitable for evaluating the performance of synthetic data generation.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">This</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="n">takes</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">dictionary</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="n">results</span><span class="p">,</span><span class="w"> </span><span class="n">calculates</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">mean</span><span class="w"> </span><span class="ow">and</span>
+<span class="n">standard</span><span class="w"> </span><span class="n">deviation</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">metrics</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">each</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">then</span><span class="w"> </span><span class="n">flattens</span><span class="w"> </span><span class="n">the</span>
+<span class="n">results</span><span class="w"> </span><span class="n">into</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">single</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="n">dictionary</span><span class="o">.</span><span class="w"> </span><span class="n">This</span><span class="w"> </span><span class="n">flattened</span><span class="w"> </span><span class="n">structure</span><span class="w"> </span><span class="n">facilitates</span>
+<span class="n">comparison</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">analysis</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">different</span><span class="w"> </span><span class="n">synthetic</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">generation</span><span class="w"> </span><span class="n">approaches</span>
+<span class="n">by</span><span class="w"> </span><span class="n">providing</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">consolidated</span><span class="w"> </span><span class="n">view</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">their</span><span class="w"> </span><span class="n">performance</span><span class="w"> </span><span class="n">metrics</span><span class="o">.</span>
+
+<span class="n">Args</span><span class="p">:</span>
+<span class="w">  </span><span class="n">results</span><span class="p">:</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">dictionary</span><span class="w"> </span><span class="n">where</span><span class="w"> </span><span class="n">keys</span><span class="w"> </span><span class="n">are</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="n">names</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">values</span><span class="w"> </span><span class="n">are</span>
+<span class="w">    </span><span class="n">dictionaries</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">metrics</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span><span class="w"> </span><span class="n">mape</span><span class="p">,</span><span class="w"> </span><span class="n">rmse</span><span class="p">,</span><span class="w"> </span><span class="n">r2</span><span class="p">)</span><span class="o">.</span>
+
+<span class="n">Returns</span><span class="p">:</span>
+<span class="w">  </span><span class="n">A</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="n">containing</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">single</span><span class="w"> </span><span class="n">dictionary</span><span class="o">.</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">dictionary</span><span class="s1">&#39;s keys are</span>
+<span class="w">  </span><span class="n">constructed</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">concatenating</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">metric</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">mean</span><span class="o">/</span><span class="n">std</span>
+<span class="w">  </span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;model1_mape_mean&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;model1_rmse_std&#39;</span><span class="p">),</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">values</span><span class="w"> </span><span class="n">are</span><span class="w"> </span><span class="n">the</span>
+<span class="w">  </span><span class="n">corresponding</span><span class="w"> </span><span class="n">calculated</span><span class="w"> </span><span class="n">values</span><span class="o">.</span><span class="w"> </span><span class="n">This</span><span class="w"> </span><span class="n">format</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">used</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">single</span><span class="o">-</span><span class="n">row</span>
+<span class="w">  </span><span class="n">representation</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">aggregated</span><span class="w"> </span><span class="n">metrics</span><span class="p">,</span><span class="w"> </span><span class="n">which</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">useful</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">comparing</span>
+<span class="w">  </span><span class="n">different</span><span class="w"> </span><span class="n">synthetic</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">generation</span><span class="w"> </span><span class="n">models</span><span class="o">.</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">convert_result</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts the model results into a flattened dictionary format suitable for evaluating the performance of synthetic data generation.</span>
+
+<span class="sd">        This method takes a dictionary of model results, calculates the mean and</span>
+<span class="sd">        standard deviation of the metrics for each model, and then flattens the</span>
+<span class="sd">        results into a single row dictionary. This flattened structure facilitates</span>
+<span class="sd">        comparison and analysis of different synthetic data generation approaches</span>
+<span class="sd">        by providing a consolidated view of their performance metrics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          results: A dictionary where keys are model names and values are</span>
+<span class="sd">            dictionaries of metrics (e.g., mape, rmse, r2).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          A list containing a single dictionary. The dictionary&#39;s keys are</span>
+<span class="sd">          constructed by concatenating the model name and metric name with mean/std</span>
+<span class="sd">          (e.g., &#39;model1_mape_mean&#39;, &#39;model1_rmse_std&#39;), and the values are the</span>
+<span class="sd">          corresponding calculated values. This format is used to create a single-row</span>
+<span class="sd">          representation of the aggregated metrics, which is useful for comparing</span>
+<span class="sd">          different synthetic data generation models.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model</span><span class="p">,</span>
+                <span class="s2">&quot;mape&quot;</span><span class="p">:</span> <span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;mape&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;rmse&quot;</span><span class="p">:</span> <span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;rmse&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;r2&quot;</span><span class="p">:</span> <span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;r2&quot;</span><span class="p">],</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">metrics</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">df_agg</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">])</span>
+    <span class="n">df_agg</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df_agg</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+
+    <span class="n">df_flat</span> <span class="o">=</span> <span class="n">df_agg</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span><span class="o">.</span><span class="n">rename_axis</span><span class="p">([</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;metric&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">df_flat</span><span class="p">[</span><span class="s2">&quot;colname&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_flat</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">df_flat</span><span class="p">[</span><span class="s2">&quot;metric&quot;</span><span class="p">]</span>
+    <span class="n">df_single_row</span> <span class="o">=</span> <span class="n">df_flat</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;colname&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">return</span> <span class="n">df_single_row</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.correlation_matrix_distance" class="doc doc-heading">
+            <code class=" language-python"><span class="n">correlation_matrix_distance</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;frobenius&#39;</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.correlation_matrix_distance" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute the distance between the correlation structures of two datasets.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">This</span><span class="w"> </span><span class="n">function</span><span class="w"> </span><span class="n">quantifies</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">dissimilarity</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">relationships</span><span class="w"> </span><span class="n">between</span><span class="w"> </span><span class="n">variables</span>
+<span class="ow">in</span><span class="w"> </span><span class="n">two</span><span class="w"> </span><span class="n">datasets</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">comparing</span><span class="w"> </span><span class="n">their</span><span class="w"> </span><span class="n">correlation</span><span class="w"> </span><span class="n">matrices</span><span class="o">.</span><span class="w"> </span><span class="n">This</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">useful</span><span class="w"> </span><span class="k">for</span>
+<span class="n">assessing</span><span class="w"> </span><span class="n">how</span><span class="w"> </span><span class="n">well</span><span class="w"> </span><span class="n">synthetic</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">replicates</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">correlational</span><span class="w"> </span><span class="n">behavior</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">real</span><span class="w"> </span><span class="n">data</span><span class="o">.</span>
+
+<span class="n">Args</span><span class="p">:</span>
+<span class="w">    </span><span class="n">df1</span><span class="w"> </span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">first</span><span class="w"> </span><span class="n">DataFrame</span><span class="o">.</span>
+<span class="w">    </span><span class="n">df2</span><span class="w"> </span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">second</span><span class="w"> </span><span class="n">DataFrame</span><span class="o">.</span>
+<span class="w">    </span><span class="n">metric</span><span class="w"> </span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="n">optional</span><span class="p">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">distance</span><span class="w"> </span><span class="n">metric</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">use</span><span class="o">.</span>
+<span class="w">        </span><span class="n">Options</span><span class="w"> </span><span class="n">are</span><span class="w"> </span><span class="s1">&#39;frobenius&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cosine&#39;</span><span class="p">,</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="s1">&#39;spectral&#39;</span><span class="o">.</span>
+<span class="w">        </span><span class="n">Defaults</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="s1">&#39;frobenius&#39;</span><span class="o">.</span>
+
+<span class="n">Returns</span><span class="p">:</span>
+<span class="w">    </span><span class="nb nb-Type">float</span><span class="p">:</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">distance</span><span class="w"> </span><span class="n">between</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">correlation</span><span class="w"> </span><span class="n">matrices</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">two</span><span class="w"> </span><span class="n">DataFrames</span><span class="o">.</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">correlation_matrix_distance</span><span class="p">(</span>
+    <span class="n">df1</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">df2</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">metric</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;frobenius&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the distance between the correlation structures of two datasets.</span>
+
+<span class="sd">        This function quantifies the dissimilarity in the relationships between variables</span>
+<span class="sd">        in two datasets by comparing their correlation matrices. This is useful for</span>
+<span class="sd">        assessing how well synthetic data replicates the correlational behavior of real data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            df1 (pandas.DataFrame): The first DataFrame.</span>
+<span class="sd">            df2 (pandas.DataFrame): The second DataFrame.</span>
+<span class="sd">            metric (str, optional): The distance metric to use.</span>
+<span class="sd">                Options are &#39;frobenius&#39;, &#39;euclidean&#39;, &#39;cosine&#39;, and &#39;spectral&#39;.</span>
+<span class="sd">                Defaults to &#39;frobenius&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The distance between the correlation matrices of the two DataFrames.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Ensure same columns and order</span>
+    <span class="n">common_cols</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">df2</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">df1</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[</span><span class="n">common_cols</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">df2</span> <span class="o">=</span> <span class="n">df2</span><span class="p">[</span><span class="n">common_cols</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+    <span class="c1"># Truncate to equal length if needed</span>
+    <span class="n">min_len</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df1</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">df2</span><span class="p">))</span>
+    <span class="n">df1</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="n">min_len</span><span class="p">]</span>
+    <span class="n">df2</span> <span class="o">=</span> <span class="n">df2</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="n">min_len</span><span class="p">]</span>
+
+    <span class="c1"># Compute correlation matrices</span>
+    <span class="n">corr1</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">corr2</span> <span class="o">=</span> <span class="n">df2</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="c1"># Distance computation</span>
+    <span class="k">if</span> <span class="n">metric</span> <span class="o">==</span> <span class="s2">&quot;frobenius&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">corr1</span> <span class="o">-</span> <span class="n">corr2</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s2">&quot;fro&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">((</span><span class="n">corr1</span> <span class="o">-</span> <span class="n">corr2</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="n">metric</span> <span class="o">==</span> <span class="s2">&quot;cosine&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cosine</span><span class="p">(</span><span class="n">corr1</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">corr2</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="n">metric</span> <span class="o">==</span> <span class="s2">&quot;spectral&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">corr1</span> <span class="o">-</span> <span class="n">corr2</span><span class="p">),</span> <span class="nb">ord</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Unsupported metric &#39;</span><span class="si">{</span><span class="n">metric</span><span class="si">}</span><span class="s2">&#39;. Choose from: &#39;frobenius&#39;, &#39;euclidean&#39;, &#39;cosine&#39;, &#39;spectral&#39;.&quot;</span>
+        <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.create_joint" class="doc doc-heading">
+            <code class=" language-python"><span class="n">create_joint</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sample_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">arc_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.create_joint" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generates a joint dataset consisting of two Gaussian blobs and a noisy arc.</p>
+<div class="codehilite"><pre><span></span><code><span class="nx">This</span><span class="w"> </span><span class="nx">function</span><span class="w"> </span><span class="nx">creates</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="nx">synthetic</span><span class="w"> </span><span class="nx">dataset</span><span class="w"> </span><span class="nx">composed</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">two</span><span class="w"> </span><span class="nx">distinct</span><span class="w"> </span><span class="nx">Gaussian</span>
+<span class="nx">clusters</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="nx">semi</span><span class="o">-</span><span class="nx">circular</span><span class="w"> </span><span class="nx">arc</span><span class="w"> </span><span class="nx">with</span><span class="w"> </span><span class="nx">added</span><span class="w"> </span><span class="nx">noise</span><span class="p">.</span><span class="w"> </span><span class="nx">This</span><span class="w"> </span><span class="k">type</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">dataset</span>
+<span class="k">is</span><span class="w"> </span><span class="nx">useful</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nx">evaluating</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">ability</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">GAN</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">capture</span><span class="w"> </span><span class="nx">different</span><span class="w"> </span><span class="nx">data</span>
+<span class="nx">distributions</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nx">complex</span><span class="w"> </span><span class="nx">shapes</span><span class="p">,</span><span class="w"> </span><span class="nx">which</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="nx">important</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nx">generating</span>
+<span class="nx">high</span><span class="o">-</span><span class="nx">quality</span><span class="w"> </span><span class="nx">synthetic</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="nx">that</span><span class="w"> </span><span class="nx">preserves</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">characteristics</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">real</span><span class="o">-</span><span class="nx">world</span>
+<span class="nx">datasets</span><span class="p">.</span><span class="w"> </span><span class="nx">The</span><span class="w"> </span><span class="nx">optional</span><span class="w"> </span><span class="nx">plotting</span><span class="w"> </span><span class="nx">functionality</span><span class="w"> </span><span class="nx">allows</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nx">visual</span><span class="w"> </span><span class="nx">inspection</span>
+<span class="nx">of</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">generated</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nx">its</span><span class="w"> </span><span class="nx">kernel</span><span class="w"> </span><span class="nx">density</span><span class="w"> </span><span class="nx">estimation</span><span class="w"> </span><span class="p">(</span><span class="nx">KDE</span><span class="p">).</span>
+
+<span class="nx">Args</span><span class="p">:</span>
+<span class="w">  </span><span class="nx">plot</span><span class="w"> </span><span class="p">(</span><span class="kt">bool</span><span class="p">):</span><span class="w"> </span><span class="nx">If</span><span class="w"> </span><span class="nx">True</span><span class="p">,</span><span class="w"> </span><span class="nx">plots</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">generated</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nx">its</span><span class="w"> </span><span class="nx">KDE</span><span class="p">.</span><span class="w"> </span><span class="nx">Defaults</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">False</span><span class="p">.</span>
+<span class="w">  </span><span class="nx">sample_size</span><span class="w"> </span><span class="p">(</span><span class="nx">int</span><span class="p">):</span><span class="w"> </span><span class="nx">The</span><span class="w"> </span><span class="nx">number</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">samples</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">generate</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nx">each</span><span class="w"> </span><span class="nx">Gaussian</span><span class="w"> </span><span class="nx">blob</span><span class="p">.</span><span class="w"> </span><span class="nx">Defaults</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="mi">1000</span><span class="p">.</span>
+<span class="w">  </span><span class="nx">arc_size</span><span class="w"> </span><span class="p">(</span><span class="nx">int</span><span class="p">):</span><span class="w"> </span><span class="nx">The</span><span class="w"> </span><span class="nx">number</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">points</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">generate</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">arc</span><span class="p">.</span><span class="w"> </span><span class="nx">Defaults</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="mi">1000</span><span class="p">.</span>
+
+<span class="nx">Returns</span><span class="p">:</span>
+<span class="w">  </span><span class="nx">torch</span><span class="p">.</span><span class="nx">Tensor</span><span class="p">:</span><span class="w"> </span><span class="nx">A</span><span class="w"> </span><span class="nx">tensor</span><span class="w"> </span><span class="nx">containing</span><span class="w"> </span><span class="nx">all</span><span class="w"> </span><span class="nx">generated</span><span class="w"> </span><span class="nx">samples</span><span class="w"> </span><span class="p">(</span><span class="nx">Gaussian</span><span class="w"> </span><span class="nx">blobs</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nx">arc</span><span class="p">).</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_joint</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sample_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">arc_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a joint dataset consisting of two Gaussian blobs and a noisy arc.</span>
+
+<span class="sd">        This function creates a synthetic dataset composed of two distinct Gaussian</span>
+<span class="sd">        clusters and a semi-circular arc with added noise. This type of dataset</span>
+<span class="sd">        is useful for evaluating the ability of the GAN to capture different data</span>
+<span class="sd">        distributions and complex shapes, which is important for generating</span>
+<span class="sd">        high-quality synthetic data that preserves the characteristics of real-world</span>
+<span class="sd">        datasets. The optional plotting functionality allows for visual inspection</span>
+<span class="sd">        of the generated data and its kernel density estimation (KDE).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          plot (bool): If True, plots the generated data and its KDE. Defaults to False.</span>
+<span class="sd">          sample_size (int): The number of samples to generate for each Gaussian blob. Defaults to 1000.</span>
+<span class="sd">          arc_size (int): The number of points to generate for the arc. Defaults to 1000.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          torch.Tensor: A tensor containing all generated samples (Gaussian blobs and arc).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Generate two Gaussian blobs</span>
+    <span class="n">mean1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">mean2</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">]]</span>
+    <span class="n">samples1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">mean1</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">sample_size</span><span class="p">)</span>
+    <span class="n">samples2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">mean2</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">sample_size</span><span class="p">)</span>
+
+    <span class="c1"># Create a perturbed arc (half-circle)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">arc_size</span><span class="p">)</span>
+    <span class="n">arc_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">arc_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">arc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">arc_x</span><span class="p">,</span> <span class="n">arc_y</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Translate and add noise to arc</span>
+    <span class="n">arc</span> <span class="o">=</span> <span class="mf">5.5</span> <span class="o">*</span> <span class="n">arc</span>  <span class="c1"># scale to match distance</span>
+    <span class="n">arc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>  <span class="c1"># center between the two blobs</span>
+    <span class="n">arc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>  <span class="c1"># center between the two blobs</span>
+    <span class="n">arc</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">arc</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="c1"># Combine all points</span>
+    <span class="n">all_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">samples1</span><span class="p">,</span> <span class="n">samples2</span><span class="p">,</span> <span class="n">arc</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="c1"># Perform KDE</span>
+        <span class="n">kde</span> <span class="o">=</span> <span class="n">gaussian_kde</span><span class="p">(</span><span class="n">all_samples</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">x_grid</span><span class="p">,</span> <span class="n">y_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:</span><span class="mi">10</span><span class="p">:</span><span class="mi">100</span><span class="n">j</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">:</span><span class="mi">10</span><span class="p">:</span><span class="mi">100</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">x_grid</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">y_grid</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+        <span class="n">density</span> <span class="o">=</span> <span class="n">kde</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># Plot</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">x_grid</span><span class="p">,</span> <span class="n">y_grid</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">all_samples</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">all_samples</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;KDE of 2 Gaussians + Noisy Arc&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">all_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.create_variates" class="doc doc-heading">
+            <code class=" language-python"><span class="n">create_variates</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_frac</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">sample_number</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.create_variates" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Creates a set of data samples (variates) from the input tensor <code>X</code>.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">This</span><span class="w"> </span><span class="k">function</span><span class="w"> </span><span class="n">generates</span><span class="w"> </span><span class="n">multiple</span><span class="w"> </span><span class="n">subsets</span><span class="w"> </span><span class="p">(</span><span class="n">variates</span><span class="p">)</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">original</span><span class="w"> </span><span class="k">data</span><span class="w"> </span><span class="n n-Quoted">`X`</span><span class="p">.</span>
+<span class="n">These</span><span class="w"> </span><span class="n">variates</span><span class="w"> </span><span class="n">are</span><span class="w"> </span><span class="n">created</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">randomly</span><span class="w"> </span><span class="n">sampling</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">fraction</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">original</span>
+<span class="k">data</span><span class="w"> </span><span class="n">points</span><span class="p">.</span><span class="w">  </span><span class="n">Creating</span><span class="w"> </span><span class="n">these</span><span class="w"> </span><span class="n">diverse</span><span class="w"> </span><span class="n">samples</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">crucial</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">downstream</span><span class="w"> </span><span class="n">tasks</span>
+<span class="n">that</span><span class="w"> </span><span class="n">benefit</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">ensemble</span><span class="w"> </span><span class="n">methods</span><span class="w"> </span><span class="k">or</span><span class="w"> </span><span class="k">require</span><span class="w"> </span><span class="n">multiple</span><span class="w"> </span><span class="n">perspectives</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="k">data</span><span class="p">.</span>
+
+<span class="n">Args</span><span class="o">:</span>
+<span class="w">    </span><span class="n">X</span><span class="w"> </span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="n">representing</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">original</span><span class="w"> </span><span class="n">dataset</span><span class="p">.</span>
+<span class="w">    </span><span class="n">y</span><span class="w"> </span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">,</span><span class="w"> </span><span class="k">optional</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">An</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">labels</span><span class="p">,</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="n">used</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">sampling</span><span class="w"> </span><span class="k">process</span><span class="p">.</span><span class="w"> </span><span class="n">Defaults</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="k">None</span><span class="p">.</span>
+<span class="w">    </span><span class="n">sample_frac</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">,</span><span class="w"> </span><span class="k">optional</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">fraction</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">original</span><span class="w"> </span><span class="k">data</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">include</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="k">each</span><span class="w"> </span><span class="n">variate</span><span class="p">.</span><span class="w"> </span><span class="n">Defaults</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mf">0.3</span><span class="p">.</span>
+<span class="w">    </span><span class="n">sample_number</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="k">optional</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="k">number</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">variates</span><span class="w"> </span><span class="p">(</span><span class="n">samples</span><span class="p">)</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">generate</span><span class="p">.</span><span class="w"> </span><span class="n">Defaults</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mf">100.</span>
+
+<span class="k">Returns</span><span class="o">:</span>
+<span class="w">    </span><span class="k">list</span><span class="o">:</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="k">list</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">tensors</span><span class="p">,</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="k">each</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">variate</span><span class="w"> </span><span class="p">(</span><span class="n">sample</span><span class="p">)</span><span class="w"> </span><span class="n">drawn</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n n-Quoted">`X`</span><span class="p">.</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_variates</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sample_frac</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">sample_number</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a set of data samples (variates) from the input tensor `X`.</span>
+
+<span class="sd">        This function generates multiple subsets (variates) of the original data `X`.</span>
+<span class="sd">        These variates are created by randomly sampling a fraction of the original</span>
+<span class="sd">        data points.  Creating these diverse samples is crucial for downstream tasks</span>
+<span class="sd">        that benefit from ensemble methods or require multiple perspectives on the data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X (torch.Tensor): The input tensor representing the original dataset.</span>
+<span class="sd">            y (torch.Tensor, optional): An optional tensor of labels, not used in the sampling process. Defaults to None.</span>
+<span class="sd">            sample_frac (float, optional): The fraction of the original data size to include in each variate. Defaults to 0.3.</span>
+<span class="sd">            sample_number (int, optional): The number of variates (samples) to generate. Defaults to 100.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of tensors, where each tensor is a variate (sample) drawn from `X`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">sample_frac</span> <span class="o">&lt;</span> <span class="mi">1</span>
+    <span class="n">total_size</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">total_size</span> <span class="o">*</span> <span class="n">sample_frac</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">sample_from_Xy_tensors</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sample_number</span><span class="p">)]</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.estimate_marginal_js" class="doc doc-heading">
+            <code class=" language-python"><span class="n">estimate_marginal_js</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.estimate_marginal_js" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Estimates the marginal Jensen-Shannon divergence between two dataframes for common columns.</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">This</span><span class="w"> </span><span class="nv">function</span><span class="w"> </span><span class="nv">quantifies</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">dissimilarity</span><span class="w"> </span><span class="nv">between</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">distributions</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">individual</span><span class="w"> </span><span class="nv">columns</span>
+<span class="nv">in</span><span class="w"> </span><span class="nv">two</span><span class="w"> </span><span class="nv">dataframes</span>.<span class="w"> </span><span class="nv">It</span><span class="w"> </span><span class="nv">computes</span><span class="w"> </span><span class="nv">histograms</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">each</span><span class="w"> </span><span class="nv">common</span><span class="w"> </span><span class="nv">column</span>,<span class="w"> </span><span class="nv">normalizes</span><span class="w"> </span><span class="nv">them</span><span class="w"> </span><span class="nv">into</span>
+<span class="nv">probability</span><span class="w"> </span><span class="nv">distributions</span>,<span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="nv">calculates</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">Jensen</span><span class="o">-</span><span class="nv">Shannon</span><span class="w"> </span><span class="nv">divergence</span><span class="w"> </span><span class="nv">between</span>
+<span class="nv">these</span><span class="w"> </span><span class="nv">distributions</span>.<span class="w"> </span><span class="nv">This</span><span class="w"> </span><span class="nv">helps</span><span class="w"> </span><span class="nv">assess</span><span class="w"> </span><span class="nv">how</span><span class="w"> </span><span class="nv">well</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">synthetic</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="ss">(</span><span class="nv">df2</span><span class="ss">)</span><span class="w"> </span><span class="nv">replicates</span>
+<span class="nv">the</span><span class="w"> </span><span class="nv">distribution</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">features</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">real</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="ss">(</span><span class="nv">df1</span><span class="ss">)</span>.
+
+<span class="nv">Args</span>:
+<span class="w">    </span><span class="nv">df1</span>:<span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">first</span><span class="w"> </span><span class="nv">dataframe</span>,<span class="w"> </span><span class="nv">representing</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">real</span><span class="w"> </span><span class="nv">data</span>.
+<span class="w">    </span><span class="nv">df2</span>:<span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">second</span><span class="w"> </span><span class="nv">dataframe</span>,<span class="w"> </span><span class="nv">representing</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">synthetic</span><span class="w"> </span><span class="nv">data</span>.
+<span class="w">    </span><span class="nv">epsilon</span>:<span class="w"> </span><span class="nv">A</span><span class="w"> </span><span class="nv">small</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="nv">added</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">histogram</span><span class="w"> </span><span class="nv">counts</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">avoid</span><span class="w"> </span><span class="nv">zero</span><span class="o">-</span><span class="nv">probabilities</span><span class="w"> </span><span class="ss">(</span><span class="nv">default</span>:<span class="w"> </span><span class="mi">1</span><span class="nv">e</span><span class="o">-</span><span class="mi">10</span><span class="ss">)</span>.
+
+<span class="nv">Returns</span>:
+<span class="w">    </span><span class="nv">dict</span>:<span class="w"> </span><span class="nv">A</span><span class="w"> </span><span class="nv">dictionary</span><span class="w"> </span><span class="nv">where</span><span class="w"> </span><span class="nv">keys</span><span class="w"> </span><span class="nv">are</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">common</span><span class="w"> </span><span class="nv">column</span><span class="w"> </span><span class="nv">names</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">values</span><span class="w"> </span><span class="nv">are</span><span class="w"> </span><span class="nv">the</span>
+<span class="w">        </span><span class="nv">corresponding</span><span class="w"> </span><span class="nv">Jensen</span><span class="o">-</span><span class="nv">Shannon</span><span class="w"> </span><span class="nv">divergence</span><span class="w"> </span><span class="nv">scores</span>.<span class="w"> </span><span class="nv">Lower</span><span class="w"> </span><span class="nv">scores</span><span class="w"> </span><span class="nv">indicate</span><span class="w"> </span><span class="nv">greater</span><span class="w"> </span><span class="nv">similarity</span>
+<span class="w">        </span><span class="nv">between</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">distributions</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">real</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">synthetic</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">that</span><span class="w"> </span><span class="nv">column</span>.
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">estimate_marginal_js</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Estimates the marginal Jensen-Shannon divergence between two dataframes for common columns.</span>
+
+<span class="sd">        This function quantifies the dissimilarity between the distributions of individual columns</span>
+<span class="sd">        in two dataframes. It computes histograms for each common column, normalizes them into</span>
+<span class="sd">        probability distributions, and then calculates the Jensen-Shannon divergence between</span>
+<span class="sd">        these distributions. This helps assess how well the synthetic data (df2) replicates</span>
+<span class="sd">        the distribution of features in the real data (df1).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            df1: The first dataframe, representing the real data.</span>
+<span class="sd">            df2: The second dataframe, representing the synthetic data.</span>
+<span class="sd">            epsilon: A small value added to histogram counts to avoid zero-probabilities (default: 1e-10).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: A dictionary where keys are the common column names and values are the</span>
+<span class="sd">                corresponding Jensen-Shannon divergence scores. Lower scores indicate greater similarity</span>
+<span class="sd">                between the distributions of the real and synthetic data for that column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">js_results</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">common_cols</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">df2</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">common_cols</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">df2</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="c1"># Histogram counts (not density, we&#39;ll normalize manually)</span>
+        <span class="n">p_hist</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">q_hist</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="c1"># Add small epsilon to avoid zero-probabilities</span>
+        <span class="n">p_hist</span> <span class="o">=</span> <span class="n">p_hist</span> <span class="o">+</span> <span class="n">epsilon</span>
+        <span class="n">q_hist</span> <span class="o">=</span> <span class="n">q_hist</span> <span class="o">+</span> <span class="n">epsilon</span>
+
+        <span class="c1"># Normalize to get valid distributions</span>
+        <span class="n">p_prob</span> <span class="o">=</span> <span class="n">p_hist</span> <span class="o">/</span> <span class="n">p_hist</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">q_prob</span> <span class="o">=</span> <span class="n">q_hist</span> <span class="o">/</span> <span class="n">q_hist</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="c1"># JS divergence is the square of the JS distance from scipy</span>
+        <span class="n">js_div</span> <span class="o">=</span> <span class="n">jensenshannon</span><span class="p">(</span><span class="n">p_prob</span><span class="p">,</span> <span class="n">q_prob</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">js_results</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">js_div</span>
+
+    <span class="k">return</span> <span class="n">js_results</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.get_real_data" class="doc doc-heading">
+            <code class=" language-python"><span class="n">get_real_data</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.get_real_data" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generates a batch of real data points from a mixture of two Gaussians.</p>
+<div class="codehilite"><pre><span></span><code><span class="nx">The</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="nx">sampled</span><span class="w"> </span><span class="nx">from</span><span class="w"> </span><span class="nx">two</span><span class="w"> </span><span class="nx">Gaussian</span><span class="w"> </span><span class="nx">distributions</span><span class="p">:</span><span class="w"> </span><span class="nx">one</span><span class="w"> </span><span class="nx">centered</span><span class="w"> </span><span class="nx">at</span><span class="w"> </span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">]</span>
+<span class="k">and</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">other</span><span class="w"> </span><span class="nx">at</span><span class="w"> </span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">5</span><span class="p">],</span><span class="w"> </span><span class="nx">both</span><span class="w"> </span><span class="nx">with</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="nx">standard</span><span class="w"> </span><span class="nx">deviation</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="m m-Double">1.0</span><span class="p">.</span><span class="w"> </span><span class="nx">The</span>
+<span class="nx">method</span><span class="w"> </span><span class="nx">randomly</span><span class="w"> </span><span class="nx">chooses</span><span class="w"> </span><span class="nx">between</span><span class="w"> </span><span class="nx">these</span><span class="w"> </span><span class="nx">two</span><span class="w"> </span><span class="nx">distributions</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nx">each</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="nx">point</span>
+<span class="k">in</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">batch</span><span class="p">.</span><span class="w"> </span><span class="nx">This</span><span class="w"> </span><span class="nx">serves</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">real</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="nx">distribution</span><span class="w"> </span><span class="nx">that</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">generator</span>
+<span class="nx">will</span><span class="w"> </span><span class="nx">attempt</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">mimic</span><span class="p">.</span>
+
+<span class="nx">Args</span><span class="p">:</span>
+<span class="w">    </span><span class="nx">batch_size</span><span class="w"> </span><span class="p">(</span><span class="nx">int</span><span class="p">):</span><span class="w"> </span><span class="nx">The</span><span class="w"> </span><span class="nx">number</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="nx">points</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">generate</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">batch</span><span class="p">.</span>
+
+<span class="nx">Returns</span><span class="p">:</span>
+<span class="w">    </span><span class="nx">torch</span><span class="p">.</span><span class="nx">Tensor</span><span class="p">:</span><span class="w"> </span><span class="nx">A</span><span class="w"> </span><span class="nx">tensor</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">shape</span><span class="w"> </span><span class="p">(</span><span class="nx">batch_size</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="nx">containing</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">generated</span>
+<span class="w">        </span><span class="nx">data</span><span class="w"> </span><span class="nx">points</span><span class="p">.</span><span class="w"> </span><span class="nx">The</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="k">type</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="nx">torch</span><span class="p">.</span><span class="nx">float</span><span class="p">.</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_real_data</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a batch of real data points from a mixture of two Gaussians.</span>
+
+<span class="sd">        The data is sampled from two Gaussian distributions: one centered at [3, 3]</span>
+<span class="sd">        and the other at [-5, -5], both with a standard deviation of 1.0. The</span>
+<span class="sd">        method randomly chooses between these two distributions for each data point</span>
+<span class="sd">        in the batch. This serves as the real data distribution that the generator</span>
+<span class="sd">        will attempt to mimic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size (int): The number of data points to generate in the batch.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: A tensor of shape (batch_size, 2) containing the generated</span>
+<span class="sd">                data points. The data type is torch.float.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,))</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">data</span><span class="p">[</span><span class="n">mix</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mix</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">data</span><span class="p">[</span><span class="n">mix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
+        <span class="n">loc</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">],</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.random_sample" class="doc doc-heading">
+            <code class=" language-python"><span class="n">random_sample</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.random_sample" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generates a random sample from an array without replacement. This is useful for creating subsets of the original data to train and evaluate machine learning models, ensuring that the evaluation is performed on unseen data.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">Args</span><span class="o">:</span>
+<span class="w">    </span><span class="n">arr</span><span class="w"> </span><span class="o">(</span><span class="n">np</span><span class="o">.</span><span class="na">array</span><span class="o">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="n">array</span><span class="o">.</span>
+<span class="w">    </span><span class="n">size</span><span class="w"> </span><span class="o">(</span><span class="n">int</span><span class="o">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">samples</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">generate</span><span class="o">.</span><span class="w"> </span><span class="n">Defaults</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="mi">1</span><span class="o">.</span>
+
+<span class="n">Returns</span><span class="o">:</span>
+<span class="w">    </span><span class="n">np</span><span class="o">.</span><span class="na">array</span><span class="o">:</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">array</span><span class="w"> </span><span class="n">containing</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">random</span><span class="w"> </span><span class="n">sample</span><span class="o">.</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">random_sample</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a random sample from an array without replacement. This is useful for creating subsets of the original data to train and evaluate machine learning models, ensuring that the evaluation is performed on unseen data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            arr (np.array): The input array.</span>
+<span class="sd">            size (int): The number of samples to generate. Defaults to 1.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: A new array containing the random sample.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)]</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.remove_anomalies_iqr" class="doc doc-heading">
+            <code class=" language-python"><span class="n">remove_anomalies_iqr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.remove_anomalies_iqr" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Removes outliers from the input DataFrame using the IQR method to improve the quality and stability of synthetic data generation.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">This</span><span class="w"> </span><span class="k">function</span><span class="w"> </span><span class="n">calculates</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="k">first</span><span class="w"> </span><span class="n">quartile</span><span class="w"> </span><span class="p">(</span><span class="n">Q1</span><span class="p">),</span><span class="w"> </span><span class="n">third</span><span class="w"> </span><span class="n">quartile</span><span class="w"> </span><span class="p">(</span><span class="n">Q3</span><span class="p">),</span><span class="w"> </span><span class="k">and</span>
+<span class="n">interquartile</span><span class="w"> </span><span class="k">range</span><span class="w"> </span><span class="p">(</span><span class="n">IQR</span><span class="p">)</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="n">DataFrame</span><span class="w"> </span><span class="n n-Quoted">`x`</span><span class="p">.</span><span class="w"> </span><span class="n">It</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="n">identifies</span><span class="w"> </span><span class="k">and</span>
+<span class="n">removes</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">containing</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="n">outside</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="k">range</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">Q1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1.5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">IQR</span><span class="w"> </span><span class="k">to</span>
+<span class="n">Q3</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1.5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">IQR</span><span class="p">.</span><span class="w"> </span><span class="n">This</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">crucial</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ensuring</span><span class="w"> </span><span class="n">that</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="k">generated</span><span class="w"> </span><span class="n">synthetic</span>
+<span class="k">data</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="n">skewed</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">extreme</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="n">present</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">original</span><span class="w"> </span><span class="n">dataset</span><span class="p">,</span><span class="w"> </span><span class="k">leading</span>
+<span class="k">to</span><span class="w"> </span><span class="n">more</span><span class="w"> </span><span class="n">representative</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">reliable</span><span class="w"> </span><span class="n">synthetic</span><span class="w"> </span><span class="n">samples</span><span class="p">.</span>
+
+<span class="n">Args</span><span class="o">:</span>
+<span class="w">    </span><span class="n">x</span><span class="o">:</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">DataFrame</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="k">remove</span><span class="w"> </span><span class="n">anomalies</span><span class="w"> </span><span class="k">from</span><span class="p">.</span>
+<span class="w">    </span><span class="n">y</span><span class="o">:</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="n">DataFrame</span><span class="p">.</span>
+
+<span class="k">Returns</span><span class="o">:</span>
+<span class="w">    </span><span class="n">tuple</span><span class="o">:</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">tuple</span><span class="w"> </span><span class="n">containing</span><span class="w"> </span><span class="n">two</span><span class="w"> </span><span class="n">DataFrames</span><span class="o">:</span>
+<span class="w">        </span><span class="o">-</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="k">first</span><span class="w"> </span><span class="n">DataFrame</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="k">data</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n n-Quoted">`x`</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">anomalies</span><span class="w"> </span><span class="n">removed</span><span class="p">.</span>
+<span class="w">        </span><span class="o">-</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="k">second</span><span class="w"> </span><span class="n">DataFrame</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">corresponding</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n n-Quoted">`y`</span><span class="p">.</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_anomalies_iqr</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Removes outliers from the input DataFrame using the IQR method to improve the quality and stability of synthetic data generation.</span>
+
+<span class="sd">        This function calculates the first quartile (Q1), third quartile (Q3), and</span>
+<span class="sd">        interquartile range (IQR) of the input DataFrame `x`. It then identifies and</span>
+<span class="sd">        removes rows containing values outside the range of Q1 - 1.5 * IQR to</span>
+<span class="sd">        Q3 + 1.5 * IQR. This step is crucial for ensuring that the generated synthetic</span>
+<span class="sd">        data is not skewed by extreme values present in the original dataset, leading</span>
+<span class="sd">        to more representative and reliable synthetic samples.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x: The DataFrame to remove anomalies from.</span>
+<span class="sd">            y: The target DataFrame.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple containing two DataFrames:</span>
+<span class="sd">                - The first DataFrame contains the data from `x` with anomalies removed.</span>
+<span class="sd">                - The second DataFrame contains the corresponding target values from `y`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Q1</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">Q3</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>
+    <span class="n">IQR</span> <span class="o">=</span> <span class="n">Q3</span> <span class="o">-</span> <span class="n">Q1</span>
+
+    <span class="n">real_data_scaled_no_anomalies_indexes</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span>
+        <span class="o">~</span><span class="p">((</span><span class="n">x</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">Q1</span> <span class="o">-</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">IQR</span><span class="p">))</span> <span class="o">|</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">Q3</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">IQR</span><span class="p">)))</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">index</span>
+    <span class="n">real_data_scaled_no_anomalies</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span>
+        <span class="n">real_data_scaled_no_anomalies_indexes</span><span class="p">,</span> <span class="p">:</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">real_data_scaled_no_anomalies</span> <span class="o">=</span> <span class="n">real_data_scaled_no_anomalies</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">real_data_scaled_no_anomalies</span><span class="o">.</span><span class="n">index</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">])</span>
+
+    <span class="c1"># real_data_scaled_no_anomalies[&quot;target&quot;] = y[real_data_scaled_no_anomalies.index]</span>
+    <span class="c1"># real_data_scaled_no_anomalies.to_csv(&quot;california_scaled_no_anomalies.csv&quot;, index=False)</span>
+    <span class="k">return</span> <span class="n">real_data_scaled_no_anomalies</span><span class="p">,</span> <span class="n">y</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.remove_inf" class="doc doc-heading">
+            <code class=" language-python"><span class="n">remove_inf</span><span class="p">(</span><span class="n">diagram</span><span class="p">,</span> <span class="n">replacement</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.remove_inf" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Replaces infinite death times in a persistence diagram with a finite value to ensure compatibility with downstream analysis and visualization tools. This is necessary because many tools cannot handle infinite values, which can arise in persistence diagrams when topological features persist indefinitely.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">Args</span><span class="o">:</span>
+<span class="w">    </span><span class="n">diagram</span><span class="w"> </span><span class="o">(</span><span class="n">np</span><span class="o">.</span><span class="na">ndarray</span><span class="o">):</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">persistence</span><span class="w"> </span><span class="n">diagram</span><span class="w"> </span><span class="n">represented</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">NumPy</span><span class="w"> </span><span class="n">array</span><span class="o">,</span><span class="w"> </span><span class="n">where</span><span class="w"> </span><span class="k">each</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="n">corresponds</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">topological</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">contains</span><span class="w"> </span><span class="n">birth</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">death</span><span class="w"> </span><span class="n">times</span><span class="o">.</span>
+<span class="w">    </span><span class="n">replacement</span><span class="w"> </span><span class="o">(</span><span class="n">float</span><span class="o">,</span><span class="w"> </span><span class="n">optional</span><span class="o">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">use</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">replacement</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">infinite</span><span class="w"> </span><span class="n">death</span><span class="w"> </span><span class="n">times</span><span class="o">.</span><span class="w"> </span><span class="n">If</span><span class="w"> </span><span class="n">None</span><span class="o">,</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="n">defaults</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="mf">1.1</span><span class="w"> </span><span class="n">times</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">maximum</span><span class="w"> </span><span class="n">finite</span><span class="w"> </span><span class="n">death</span><span class="w"> </span><span class="n">time</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">diagram</span><span class="o">.</span>
+
+<span class="n">Returns</span><span class="o">:</span>
+<span class="w">    </span><span class="n">np</span><span class="o">.</span><span class="na">ndarray</span><span class="o">:</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">copy</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="n">persistence</span><span class="w"> </span><span class="n">diagram</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">infinite</span><span class="w"> </span><span class="n">death</span><span class="w"> </span><span class="n">times</span><span class="w"> </span><span class="n">replaced</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">finite</span><span class="w"> </span><span class="n">value</span><span class="o">.</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_inf</span><span class="p">(</span><span class="n">diagram</span><span class="p">,</span> <span class="n">replacement</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replaces infinite death times in a persistence diagram with a finite value to ensure compatibility with downstream analysis and visualization tools. This is necessary because many tools cannot handle infinite values, which can arise in persistence diagrams when topological features persist indefinitely.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            diagram (np.ndarray): A persistence diagram represented as a NumPy array, where each row corresponds to a topological feature and contains birth and death times.</span>
+<span class="sd">            replacement (float, optional): The value to use as a replacement for infinite death times. If None, it defaults to 1.1 times the maximum finite death time in the diagram.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: A copy of the input persistence diagram with infinite death times replaced by a finite value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">diagram</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">diagram</span>
+    <span class="n">finite_deaths</span> <span class="o">=</span> <span class="n">diagram</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">diagram</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]),</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">finite_deaths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># All death times are inf — choose arbitrary value</span>
+        <span class="n">finite_max</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">finite_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">finite_deaths</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">replacement</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">replacement</span> <span class="o">=</span> <span class="mf">1.1</span> <span class="o">*</span> <span class="n">finite_max</span>
+    <span class="n">diagram</span> <span class="o">=</span> <span class="n">diagram</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">diagram</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">diagram</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]),</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">replacement</span>
+    <span class="k">return</span> <span class="n">diagram</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.sample_from_Xy_tensors" class="doc doc-heading">
+            <code class=" language-python"><span class="n">sample_from_Xy_tensors</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.sample_from_Xy_tensors" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Samples a subset of rows from a given data tensor to create a smaller, representative dataset. This is useful for efficiently training and evaluating models on a manageable portion of the data while preserving its key characteristics.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">Args</span><span class="o">:</span>
+<span class="w">    </span><span class="n">X</span><span class="w"> </span><span class="o">(</span><span class="n">torch</span><span class="o">.</span><span class="na">Tensor</span><span class="o">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">sample</span><span class="w"> </span><span class="n">from</span><span class="o">.</span>
+<span class="w">    </span><span class="n">n_samples</span><span class="w"> </span><span class="o">(</span><span class="n">int</span><span class="o">):</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">samples</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">extract</span><span class="o">.</span>
+
+<span class="n">Returns</span><span class="o">:</span>
+<span class="w">    </span><span class="n">torch</span><span class="o">.</span><span class="na">Tensor</span><span class="o">:</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="n">containing</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">sampled</span><span class="w"> </span><span class="n">rows</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="n">X</span><span class="o">,</span><span class="w"> </span><span class="n">representing</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">subset</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">original</span><span class="w"> </span><span class="n">data</span><span class="o">.</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sample_from_Xy_tensors</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Samples a subset of rows from a given data tensor to create a smaller, representative dataset. This is useful for efficiently training and evaluating models on a manageable portion of the data while preserving its key characteristics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X (torch.Tensor): The input data tensor to sample from.</span>
+<span class="sd">            n_samples (int): The number of samples to extract.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: A tensor containing the sampled rows from the input tensor X, representing a subset of the original data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">indices_trunc</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[:</span><span class="n">n_samples</span><span class="p">]</span>
+    <span class="n">X_sampled_tensor</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">indices_trunc</span><span class="p">]</span>
+    <span class="c1"># y_sampled_tensor = y[indices_trunc[:n_samples]]</span>
+    <span class="c1"># return X_sampled_tensor, y_sampled_tensor</span>
+    <span class="k">return</span> <span class="n">X_sampled_tensor</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wgan_gp.utils.topological_distance" class="doc doc-heading">
+            <code class=" language-python"><span class="n">topological_distance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">maxdim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></code>
+
+<a href="#wgan_gp.utils.topological_distance" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute the topological distance between two point clouds using persistent homology.</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">This</span><span class="w"> </span><span class="nv">method</span><span class="w"> </span><span class="nv">leverages</span><span class="w"> </span><span class="nv">persistent</span><span class="w"> </span><span class="nv">homology</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">Wasserstein</span><span class="w"> </span><span class="nv">distance</span><span class="w"> </span><span class="nv">to</span>
+<span class="nv">quantify</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">dissimilarity</span><span class="w"> </span><span class="nv">between</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">topological</span><span class="w"> </span><span class="nv">features</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">two</span><span class="w"> </span><span class="nv">point</span><span class="w"> </span><span class="nv">clouds</span>,
+<span class="nv">specifically</span><span class="w"> </span><span class="nv">focusing</span><span class="w"> </span><span class="nv">on</span><span class="w"> </span><span class="mi">0</span><span class="o">-</span><span class="nv">dimensional</span><span class="w"> </span><span class="ss">(</span><span class="nv">H0</span><span class="ss">)</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="mi">1</span><span class="o">-</span><span class="nv">dimensional</span><span class="w"> </span><span class="ss">(</span><span class="nv">H1</span><span class="ss">)</span><span class="w"> </span><span class="nv">features</span>.
+<span class="nv">By</span><span class="w"> </span><span class="nv">comparing</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">persistence</span><span class="w"> </span><span class="nv">diagrams</span>,<span class="w"> </span><span class="nv">it</span><span class="w"> </span><span class="nv">provides</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">measure</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">how</span><span class="w"> </span><span class="nv">different</span>
+<span class="nv">the</span><span class="w"> </span><span class="nv">underlying</span><span class="w"> </span><span class="nv">shapes</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">connectivity</span><span class="w"> </span><span class="nv">patterns</span><span class="w"> </span><span class="nv">are</span><span class="w"> </span><span class="nv">between</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">datasets</span>.
+<span class="nv">This</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">crucial</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">evaluating</span><span class="w"> </span><span class="nv">how</span><span class="w"> </span><span class="nv">well</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">generated</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="nv">captures</span><span class="w"> </span><span class="nv">the</span>
+<span class="nv">essential</span><span class="w"> </span><span class="nv">topological</span><span class="w"> </span><span class="nv">characteristics</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">real</span><span class="w"> </span><span class="nv">data</span>.
+
+<span class="nv">Args</span>:
+<span class="w">    </span><span class="nv">X</span><span class="w"> </span><span class="ss">(</span><span class="nv">numpy</span>.<span class="nv">ndarray</span><span class="ss">)</span>:<span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">first</span><span class="w"> </span><span class="nv">point</span><span class="w"> </span><span class="nv">cloud</span>.
+<span class="w">    </span><span class="nv">Y</span><span class="w"> </span><span class="ss">(</span><span class="nv">numpy</span>.<span class="nv">ndarray</span><span class="ss">)</span>:<span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">second</span><span class="w"> </span><span class="nv">point</span><span class="w"> </span><span class="nv">cloud</span>.
+<span class="w">    </span><span class="nv">maxdim</span><span class="w"> </span><span class="ss">(</span><span class="nv">int</span>,<span class="w"> </span><span class="nv">optional</span><span class="ss">)</span>:<span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">maximum</span><span class="w"> </span><span class="nv">dimension</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">compute</span><span class="w"> </span><span class="nv">persistent</span><span class="w"> </span><span class="nv">homology</span><span class="w"> </span><span class="k">for</span>.
+<span class="w">        </span><span class="nv">Defaults</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="mi">2</span>.
+
+<span class="nv">Returns</span>:
+<span class="w">    </span><span class="nv">tuple</span>:<span class="w"> </span><span class="nv">A</span><span class="w"> </span><span class="nv">tuple</span><span class="w"> </span><span class="nv">containing</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">Wasserstein</span><span class="w"> </span><span class="nv">distances</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">H0</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">H1</span>.
+<span class="w">    </span><span class="nv">The</span><span class="w"> </span><span class="nv">first</span><span class="w"> </span><span class="nv">element</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">Wasserstein</span><span class="w"> </span><span class="nv">distance</span><span class="w"> </span><span class="nv">between</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">H0</span>
+<span class="w">    </span><span class="nv">persistence</span><span class="w"> </span><span class="nv">diagrams</span>.<span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">second</span><span class="w"> </span><span class="nv">element</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">Wasserstein</span>
+<span class="w">    </span><span class="nv">distance</span><span class="w"> </span><span class="nv">between</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">H1</span><span class="w"> </span><span class="nv">persistence</span><span class="w"> </span><span class="nv">diagrams</span>,<span class="w"> </span><span class="nv">or</span><span class="w"> </span><span class="nv">None</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nv">the</span>
+<span class="w">    </span><span class="nv">persistence</span><span class="w"> </span><span class="nv">diagrams</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="nv">not</span><span class="w"> </span><span class="nv">contain</span><span class="w"> </span><span class="nv">H1</span>.
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>wgan_gp/utils.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">topological_distance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">maxdim</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the topological distance between two point clouds using persistent homology.</span>
+
+<span class="sd">        This method leverages persistent homology and the Wasserstein distance to</span>
+<span class="sd">        quantify the dissimilarity between the topological features of two point clouds,</span>
+<span class="sd">        specifically focusing on 0-dimensional (H0) and 1-dimensional (H1) features.</span>
+<span class="sd">        By comparing the persistence diagrams, it provides a measure of how different</span>
+<span class="sd">        the underlying shapes and connectivity patterns are between the datasets.</span>
+<span class="sd">        This is crucial for evaluating how well the generated data captures the</span>
+<span class="sd">        essential topological characteristics of the real data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X (numpy.ndarray): The first point cloud.</span>
+<span class="sd">            Y (numpy.ndarray): The second point cloud.</span>
+<span class="sd">            maxdim (int, optional): The maximum dimension to compute persistent homology for.</span>
+<span class="sd">                Defaults to 2.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple containing the Wasserstein distances for H0 and H1.</span>
+<span class="sd">            The first element is the Wasserstein distance between the H0</span>
+<span class="sd">            persistence diagrams. The second element is the Wasserstein</span>
+<span class="sd">            distance between the H1 persistence diagrams, or None if the</span>
+<span class="sd">            persistence diagrams do not contain H1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dgms_X</span> <span class="o">=</span> <span class="n">ripser</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">maxdim</span><span class="o">=</span><span class="n">maxdim</span><span class="p">)[</span><span class="s2">&quot;dgms&quot;</span><span class="p">]</span>
+    <span class="n">dgms_Y</span> <span class="o">=</span> <span class="n">ripser</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">maxdim</span><span class="o">=</span><span class="n">maxdim</span><span class="p">)[</span><span class="s2">&quot;dgms&quot;</span><span class="p">]</span>
+    <span class="n">h0</span> <span class="o">=</span> <span class="n">wasserstein</span><span class="p">(</span><span class="n">dgms_X</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dgms_Y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">h1</span> <span class="o">=</span> <span class="n">wasserstein</span><span class="p">(</span><span class="n">dgms_X</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dgms_Y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dgms_X</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">h0</span><span class="p">,</span> <span class="n">h1</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "search.highlight"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>
