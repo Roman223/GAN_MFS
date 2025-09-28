@@ -43,7 +43,6 @@ pip install -r req.txt
 ### Basic Training
 
 ```python
-from wgan_gp_main import *
 from wgan_gp.models import Generator, Discriminator
 from wgan_gp.training import Trainer, TrainerModified
 
