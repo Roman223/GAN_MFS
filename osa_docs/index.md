@@ -1,6 +1,8 @@
-# WGAN-GP with Meta-Feature Statistics (MFS)
+# Intro
+**WGAN-GP with Meta-Feature Statistics (MFS)**
 
-A PyTorch implementation of Wasserstein GAN with Gradient Penalty (WGAN-GP) enhanced with meta-feature statistics preservation for high-quality synthetic tabular data generation.
+A PyTorch implementation of Wasserstein GAN with Gradient Penalty (WGAN-GP) enhanced with meta-feature statistics 
+preservation for synthetic tabular data generation.
 
 ## Features
 
@@ -9,7 +11,7 @@ A PyTorch implementation of Wasserstein GAN with Gradient Penalty (WGAN-GP) enha
 - **Comprehensive Evaluation**: Multiple utility and fidelity metrics for synthetic data assessment
 - **Experiment Tracking**: Built-in Aim tracking for monitoring training progress
 - **Flexible Architecture**: Configurable generator and discriminator architectures
-- **Multi-Dataset Support**: Tested on various tabular datasets including Abalone and California Housing
+- **Multi-Dataset Support**: Tested on tabular datasets including Abalone and California Housing
 
 ## Architecture
 
@@ -124,7 +126,6 @@ The project includes comprehensive evaluation metrics:
 
 - **Correlation Matrix Distance**: Cosine distance between correlation matrices
 - **Jensen-Shannon Divergence**: Marginal distribution similarity
-- **Topological Distance**: Persistent homology-based comparison
 
 ## Experiment Tracking
 
@@ -135,11 +136,9 @@ Aim tracking is implemented and strongly advised for monitoring:
 - Sample quality progression
 - Comprehensive metrics logging
 
-Instead, use:
-```python
-import aim
-tracker = aim.Run(experiment="WGAN-GP")
-tracker[hparams] = learning_params
+To wake up server invoke:
+```
+aim up
 ```
 
 ## Project Structure
@@ -159,51 +158,13 @@ wgan_gp/
 
 ## Key Dependencies
 
-- **PyTorch**: Deep learning framework
-- **Aim**: Experiment tracking
-- **scikit-learn**: Machine learning utilities
-- **pandas/numpy**: Data manipulation
-- **matplotlib/seaborn**: Visualization
-- **torch-topological**: Topological data analysis
-- **POT**: Optimal transport (Wasserstein distance)
-- **pymfe**: Meta-feature extraction
-- **xgboost**: Gradient boosting for utility metrics
-
-## Documentation
-
-This project includes comprehensive self-hosted documentation built with MkDocs and Material theme. The documentation provides detailed API references, usage examples, and theoretical background.
-
-### Building and Running Documentation Locally
-
-To build and serve the documentation locally:
-
-1. **Install documentation dependencies** (if not already installed):
-```bash
-pip install mkdocs-material 'mkdocstrings[python]'
-```
-
-2. **Serve the documentation** locally:
-```bash
-mkdocs serve --config-file osa_mkdocs.yml
-```
-
-3. **Access the documentation** at `http://localhost:8000`
-
-The documentation includes:
-- **API Reference**: Auto-generated from docstrings using mkdocstrings
-- **Module Documentation**: Detailed explanations of each component
-- **Usage Examples**: Code samples and tutorials
-- **Meta-Feature Statistics Table**: Complete reference of all available MFS features
-
-### Building Static Documentation
-
-To build static HTML files for deployment:
-
-```bash
-mkdocs build -f osa_mkdocs.yml
-```
-
-The generated documentation will be available in the `site/` directory and can be deployed to any static hosting service.
+- PyTorch: Deep learning framework
+- Aim: Experiment tracking
+- scikit-learn: Machine learning utilities
+- pandas/numpy: Data manipulation
+- matplotlib/seaborn: Visualization
+- torch-topological: Topological data analysis
+- POT: Optimal transport (Wasserstein distance)
 
 ## Configuration
 
@@ -232,7 +193,6 @@ The model generates high-quality synthetic tabular data that preserves:
 - Statistical distributions of original features
 - Correlational structure between variables
 - Utility for downstream machine learning tasks
-- Topological properties of the data manifold
 
 ## Contributing
 
@@ -248,10 +208,10 @@ If you use this code in your research, please cite:
 
 ```bibtex
 @misc{wgan_gp_mfs,
-    title={Meta-features informed WGAN for tabular data},
-    author={[Roman Netrogolov, Irina Deeva]},
-    year={2025},
-    url={https://github.com/Roman223/GAN_MFS}
+    title={WGAN-GP with Meta-Feature Statistics for Synthetic Tabular Data Generation},
+    author={[Your Name]},
+    year={2024},
+    url={https://github.com/your-username/your-repo}
 }
 ```
 

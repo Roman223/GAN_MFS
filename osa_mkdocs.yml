@@ -1,0 +1,44 @@
+site_name: GAN_MFS Documentation
+site_description: WGAN-GP with Meta-Feature Statistics for Synthetic Tabular Data Generation
+docs_dir: osa_docs
+
+nav:
+  - Home: index.md
+  - Utils: utils.md
+  - WGAN-GP:
+    - Overview: wgan_gp/index.md
+    - Models: wgan_gp/models.md
+    - Training: wgan_gp/training.md
+    - PyMFE to Torch: wgan_gp/pymfe_to_torch.md
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep blue
+      accent: blue
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["."]
+          options:
+            show_source: true
+            show_root_heading: true
+            show_root_toc_entry: false
+            docstring_style: google
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - toc:
+      permalink: true
