@@ -248,10 +248,10 @@ If you use this code in your research, please cite:
 
 ```bibtex
 @misc{wgan_gp_mfs,
-    title={WGAN-GP with Meta-Feature Statistics for Synthetic Tabular Data Generation},
-    author={[Your Name]},
-    year={2024},
-    url={https://github.com/your-username/your-repo}
+    title={Meta-features informed WGAN for tabular data},
+    author={[Roman Netrogolov, Irina Deeva]},
+    year={2025},
+    url={https://github.com/Roman223/GAN_MFS}
 }
 ```
 
